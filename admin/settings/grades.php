@@ -93,6 +93,8 @@ if (has_capability('moodle/grade:manage', $systemcontext)
 
         $temp->add(new admin_setting_configmultiselect('grade_aggregations_visible', new lang_string('aggregationsvisible', 'grades'),
                                                        new lang_string('aggregationsvisiblehelp', 'grades'), $defaultvisible, $options));
+        // SWM Extra Credit handling
+        $temp->add(new admin_setting_configcheckbox('grade_swm_extra_credit', new lang_string('swm_ec', 'grades'), new lang_string('swm_ec_help', 'grades'), '1'));
 
         $options = array(0 => new lang_string('no'), 1 => new lang_string('yes'));
 
