@@ -930,6 +930,8 @@ class grade_category extends grade_object {
         if (!$extraused)
             return false;
 
+        $coef = $item->aggregationcoef;
+
         $validextra = (
             ($this->aggregation != GRADE_AGGREGATE_WEIGHTED_MEAN && $coef > 0) ||
             $coef < 0
