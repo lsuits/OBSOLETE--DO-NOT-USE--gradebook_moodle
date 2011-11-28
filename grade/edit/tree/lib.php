@@ -380,12 +380,9 @@ class grade_edit_tree {
 
             return '<input type="text" size="6" id="aggregationcoef_'.$item->id.'" name="aggregationcoef_'.$item->id.'"
                 value="'.grade_edit_tree::format_number($item->aggregationcoef).'" />';
-        } elseif ($aggcoef == 'aggregationcoefextrasum' && $type == 'extra') {
-            $checked = ($item->aggregationcoef > 0) ? 'checked="checked"' : '';
-            return '<input type="hidden" name="extracredit_'.$item->id.'" value="0" />
-                    <input type="checkbox" id="extracredit_'.$item->id.'" name="extracredit_'.$item->id.'" value="1" '."$checked />\n";
-        } elseif ($aggcoef == 'aggregationcoefweight' && $type == 'extra') {
-            $checked = ($item->aggregationcoef < 0) ? 'checked="checked"' : '';
+        } elseif (($aggcoef == 'aggregationcoefextrasum' || $aggcoef == 'aggregationcoefweight') && $type == 'extra') {
+            $valid = ($aggcoef != 'aggregationcoefweight' and $item->aggregationcoef > 0);
+            $checked = ($valid or $item->aggregationcoef < 0) ? 'checked="checked"' : '';
             return '<input type="hidden" name="extracredit_'.$item->id.'" value="0" />
                     <input type="checkbox" id="extracredit_'.$item->id.'" name="extracredit_'.$item->id.'" value="1" '."$checked />\n";
         } else {
