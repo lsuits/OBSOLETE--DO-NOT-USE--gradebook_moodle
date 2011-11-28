@@ -882,23 +882,16 @@ class grade_category extends grade_object {
      * @return array Limited grades.
      */
     public function apply_limit_rules(&$grade_values, $items) {
-        $extraused = $this->is_extracredit_used();
 
         if (!empty($this->droplow)) {
             asort($grade_values, SORT_NUMERIC);
             $dropped = 0;
 
             foreach ($grade_values as $itemid=>$value) {
-                $coef = $items[$itemid]->aggregationcoef;
-
-                $validextra = (
-                    ($this->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN and $coef < 0) or
-                    $coef > 0
-                );
 
                 if ($dropped < $this->droplow) {
 
-                    if ($extraused and $validextra) {
+                    if ($this->is_item_extra_credit($items[$itemid])) {
                         // no drop low for extra credits
 
                     } else {
@@ -917,14 +910,8 @@ class grade_category extends grade_object {
             $kept = 0;
 
             foreach ($grade_values as $itemid=>$value) {
-                $coef = $items[$itemid]->aggregationcoef;
 
-                $validextra = (
-                    ($this->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN and $coef < 0) or
-                    $coef > 0
-                );
-
-                if ($extraused and $validextra) {
+                if ($this->is_item_extra_credit($items[$itemid])) {
                     // we keep all extra credits
 
                 } else if ($kept < $this->keephigh) {
@@ -935,6 +922,20 @@ class grade_category extends grade_object {
                 }
             }
         }
+    }
+
+    function is_item_extra_credit($item) {
+        $extraused = $this->is_extracredit_used();
+
+        if (!$extraused)
+            return false;
+
+        $validextra = (
+            ($this->aggregation != GRADE_AGGREGATE_WEIGHTED_MEAN && $coef > 0) ||
+            $coef < 0
+        );
+
+        return ($extraused && $validextra);
     }
 
     /**
