@@ -296,13 +296,15 @@ if ($data = data_submitted() and confirm_sesskey()) {
 
             // Weighted Mean special case
             $parent = $grade_item->load_parent_category();
+
             if ($parent->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN) {
                 $oldcoef = $grade_item->aggregationcoef;
 
+                // Retain original aggregationcoef if extra credit checked
                 if ($oldcoef < 0 and !$value) {
-                    $grade_item->aggregationcoef = 0;
+                    $grade_item->aggregationcoef = $oldcoef * -1;
                 } else {
-                    $grade_item->aggregationcoef = $value ? -1 : $oldcoef;
+                    $grade_item->aggregationcoef = $value ? abs($oldcoef) * -1 : $oldcoef;
                 }
             } else {
                 $grade_item->aggregationcoef = $value;
