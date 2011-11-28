@@ -707,6 +707,9 @@ class grade_category extends grade_object {
                 // weight is the range of grade (usually grademax)
                 $weightsum = 0;
                 $sum       = null;
+                $extrasum  = 0;
+
+                $weighted_ec = get_config('moodle', 'grade_swm_extra_credit');
 
                 foreach ($grade_values as $itemid=>$grade_value) {
                     $weight = $items[$itemid]->grademax - $items[$itemid]->grademin;
@@ -717,7 +720,11 @@ class grade_category extends grade_object {
 
                     if ($items[$itemid]->aggregationcoef == 0) {
                         $weightsum += $weight;
+                    } elseif (empty($weighted_ec)) {
+                        $extrasum += ($grade_value / 10);
+                        continue;
                     }
+
                     $sum += $weight * $grade_value;
                 }
 
@@ -727,6 +734,8 @@ class grade_category extends grade_object {
                 } else {
                     $agg_grade = $sum / $weightsum;
                 }
+
+                $agg_grade += $extrasum;
                 break;
 
             case GRADE_AGGREGATE_EXTRACREDIT_MEAN: // special average
