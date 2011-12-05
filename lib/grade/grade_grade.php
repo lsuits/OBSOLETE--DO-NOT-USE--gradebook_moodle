@@ -239,7 +239,7 @@ class grade_grade extends grade_object {
 
         $grade_item = $this->load_grade_item();
 
-        if ($grade_item->gradetype == GRADE_TYPE_NONE) {
+        if ($grade_item->gradetype == GRADE_TYPE_NONE or !$grade_item->is_overridable_item()) {
             return false;
         }
 
