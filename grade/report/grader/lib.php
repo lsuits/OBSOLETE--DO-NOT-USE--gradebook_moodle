@@ -970,7 +970,7 @@ class grade_report_grader extends grade_report {
 
                 // Do not show any icons if no grade (no record in DB to match)
                 if (!$item->needsupdate and $USER->gradeediting[$this->courseid]) {
-                    $itemcell->text .= $this->get_icons($element, $item);
+                    $itemcell->text .= $this->get_icons($element);
                 }
 
                 $hidden = '';
@@ -1502,10 +1502,9 @@ class grade_report_grader extends grade_report {
      * with the icons needed for the grader report.
      *
      * @param object $object
-     * @param grade_item $item
      * @return string HTML
      */
-    protected function get_icons($element, $item = null) {
+    protected function get_icons($element) {
         global $CFG, $USER, $OUTPUT;
 
         if (!$USER->gradeediting[$this->courseid]) {
@@ -1515,7 +1514,13 @@ class grade_report_grader extends grade_report {
         // Init all icons
         $editicon = '';
 
-        $overridable = $item ? $item->is_overridable_item() : true;
+        if ($element['type'] == 'grade') {
+            $item = $element['object']->grade_item;
+
+            $overridable = $item->is_overridable_item();
+        } else {
+            $overridable = true;
+        }
 
         if ($element['type'] != 'categoryitem' && $element['type'] != 'courseitem' &&$overridable) {
             $editicon = $this->gtree->get_edit_icon($element, $this->gpr);
