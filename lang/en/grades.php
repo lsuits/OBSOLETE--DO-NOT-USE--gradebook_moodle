@@ -461,6 +461,10 @@ $string['outcomesstandardavailable'] = 'Available standard outcomes';
 $string['outcomestandard'] = 'Standard outcome';
 $string['outcomestandard_help'] = 'A standard outcome is available site-wide, for all courses.';
 $string['overallaverage'] = 'Overall average';
+$string['overridecat'] = 'Allow Grade Override';
+$string['overridecat_help'] = 'This option allows users to override the final
+grade in for category totals. Unchecking this option will make category totals
+uneditable.';
 $string['overridden'] = 'Overridden';
 $string['overridden_help'] = 'If ticked, the grade can no longer be changed from within the related activity.
 
