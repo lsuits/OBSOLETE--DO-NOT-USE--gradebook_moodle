@@ -281,11 +281,6 @@ class edit_item_form extends moodleform {
                     }
                 }
             }
-
-        } else {
-            // all new items are manual, children of course category
-            $mform->removeElement('plusfactor');
-            $mform->removeElement('multfactor');
         }
 
         // no parent header for course category

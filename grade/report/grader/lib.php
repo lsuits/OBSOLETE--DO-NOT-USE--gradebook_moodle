@@ -980,6 +980,11 @@ class grade_report_grader extends grade_report {
 
                 } else if ($USER->gradeediting[$this->courseid]) {
 
+                    // Editing means user edit manual item raw
+                    if ($item->is_manual_item()) {
+                        $gradeval = $grade->rawgrade;
+                    }
+
                     if ($item->scaleid && !empty($scalesarray[$item->scaleid])) {
                         $scale = $scalesarray[$item->scaleid];
                         $gradeval = (int)$gradeval; // scales use only integers
