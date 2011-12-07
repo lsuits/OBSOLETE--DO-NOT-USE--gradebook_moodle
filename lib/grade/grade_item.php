@@ -674,10 +674,6 @@ class grade_item extends grade_object {
                 return "Could not aggregate final grades for category:".$this->id; // TODO: improve and localize
             }
 
-        } else if ($this->is_manual_item()) {
-            // manual items track only final grades, no raw grades
-            return true;
-
         } else if (!$this->is_raw_used()) {
             // hmm - raw grades are not used- nothing to regrade
             return true;
@@ -966,7 +962,7 @@ class grade_item extends grade_object {
      * @return bool
      */
     public function is_raw_used() {
-        return ($this->is_external_item() and !$this->is_calculated() and !$this->is_outcome_item());
+        return ($this->is_manual_item() or $this->is_external_item() and !$this->is_calculated() and !$this->is_outcome_item());
     }
 
     /**
@@ -1491,6 +1487,14 @@ class grade_item extends grade_object {
             // do not update grades that should be already locked, force regrade instead
             $this->force_regrading();
             return false;
+        }
+
+        // Manual Item raw-grade support
+        if ($this->is_manual_item()) {
+            return $this->update_raw_grade(
+                $userid, $finalgrade, $source, $feedback, $feedbackformat,
+                $usermodified, null, null, $grade
+            );
         }
 
         $oldgrade = new stdClass();
