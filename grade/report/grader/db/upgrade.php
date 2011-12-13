@@ -23,11 +23,20 @@ class grader_manual_items extends gradereport_grader_upgrade_state {
     var $version = 2011120801;
 
     function upgrade($db) {
-        $sql = "UPDATE {grade_grades} gr, {grade_items} gi
-            SET gr.rawgrade = gr.finalgrade
-            WHERE gi.id = gr.itemid AND gi.itemtype = 'manual'";
+        $base_sql = "%s {grade_grades} gr, {grade_items} gi %s " .
+            "WHERE gi.id = gr.itemid AND gi.itemtype = 'manual'";
 
-        return $db->execute($sql);
+        $sql = sprintf($base_sql, "SELECT COUNT(*) FROM", "");
+
+        $count = $db->count_records_sql($sql);
+
+        if (empty($count)) {
+            return true;
+        } else {
+            $sql = sprintf($base_sql, "UPDATE", "SET gr.rawgrade = gr.finalgrade");
+
+            return $db->execute($sql);
+        }
     }
 }
 
