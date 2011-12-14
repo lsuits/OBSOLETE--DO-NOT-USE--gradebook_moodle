@@ -297,6 +297,11 @@ if ($data = data_submitted() and confirm_sesskey()) {
             // Weighted Mean special case
             $parent = $grade_item->load_parent_category();
 
+            // Make sure about category item's parent category
+            if ($grade_item->itemtype == 'category') {
+                $parent = $parent->load_parent_category();
+            }
+
             if ($parent->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN) {
                 $oldcoef = $grade_item->aggregationcoef;
 
