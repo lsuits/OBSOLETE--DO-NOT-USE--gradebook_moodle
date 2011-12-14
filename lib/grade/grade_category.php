@@ -693,7 +693,7 @@ class grade_category extends grade_object {
                     if ($coef == 0) {
                         continue;
                     } else if ($coef < 0) {
-                        $extrasum += ($grade_value / (100 / $items[$itemid]->grademax));
+                        $extrasum += ($grade_value / ($this->grade_item->grademax / $items[$itemid]->grademax));
                     } else {
                         $weightsum += $coef;
                         $sum       += $coef * $grade_value;
