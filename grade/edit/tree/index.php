@@ -308,6 +308,8 @@ if ($data = data_submitted() and confirm_sesskey()) {
                 // Retain original aggregationcoef if extra credit checked
                 if ($oldcoef < 0 and !$value) {
                     $grade_item->aggregationcoef = $oldcoef * -1;
+                } else if ($oldcoef == 0 and $value) {
+                    $grade_item->aggregationcoef = -1;
                 } else {
                     $grade_item->aggregationcoef = $value ? abs($oldcoef) * -1 : $oldcoef;
                 }
