@@ -721,7 +721,7 @@ class grade_category extends grade_object {
                     if ($items[$itemid]->aggregationcoef == 0) {
                         $weightsum += $weight;
                     } elseif (empty($weighted_ec)) {
-                        $extrasum += ($grade_value / 10);
+                        $extrasum += ($grade_value / ($this->grade_item->grademax / $items[$itemid]->grademax));
                         continue;
                     }
 
