@@ -155,6 +155,8 @@ if (has_capability('moodle/grade:manage', $systemcontext)
                                                              'locktime' => new lang_string('locktime', 'grades'),
                                                              'aggregationcoef' => new lang_string('aggregationcoef', 'grades'),
                                                              'parentcategory' => new lang_string('parentcategory', 'grades'))));
+
+        $temp->add(new admin_setting_configcheckbox('grade_min_hide', new lang_string('minimum_hide', 'grades'), new lang_string('minimum_hide_help', 'grades'), '1'));
     }
     $ADMIN->add('grades', $temp);
 

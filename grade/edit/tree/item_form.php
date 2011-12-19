@@ -86,9 +86,12 @@ class edit_item_form extends moodleform {
         $mform->addHelpButton('grademax', 'grademax', 'grades');
         $mform->disabledIf('grademax', 'gradetype', 'noteq', GRADE_TYPE_VALUE);
 
-        $mform->addElement('text', 'grademin', get_string('grademin', 'grades'));
-        $mform->addHelpButton('grademin', 'grademin', 'grades');
-        $mform->disabledIf('grademin', 'gradetype', 'noteq', GRADE_TYPE_VALUE);
+        $grademin_hider = get_config('moodle', 'grade_min_hide');
+        if (empty($grademin_hider)) {
+            $mform->addElement('text', 'grademin', get_string('grademin', 'grades'));
+            $mform->addHelpButton('grademin', 'grademin', 'grades');
+            $mform->disabledIf('grademin', 'gradetype', 'noteq', GRADE_TYPE_VALUE);
+        }
 
         $mform->addElement('text', 'gradepass', get_string('gradepass', 'grades'));
         $mform->addHelpButton('gradepass', 'gradepass', 'grades');
