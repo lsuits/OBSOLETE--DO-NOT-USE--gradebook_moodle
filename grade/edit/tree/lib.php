@@ -996,7 +996,13 @@ class grade_edit_tree_column_keephigh extends grade_edit_tree_column_category {
     }
 
     public function get_category_cell($category, $levelclass, $params) {
-        $keephigh = '<input type="text" size="3" id="keephigh_'.$category->id.'" name="keephigh_'.$category->id.'" value="'.$category->keephigh.'" />';
+        $options_h = array(0 => get_string('all'));
+
+        for ($i=1; $i<=20; $i++) {
+            $options_h[$i] = $i;
+        }
+
+        $keephigh = html_writer::select($options_h, 'keephigh_'.$category->id, $category->keephigh, null);
 
         if ($this->forced) {
             $keephigh = $category->keephigh;
