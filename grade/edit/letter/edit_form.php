@@ -66,12 +66,12 @@ class edit_letter_form extends moodleform {
                 $mform->disabledIf($gradelettername, $gradeboundaryname, 'eq', -1);
             }
 
-            $mform->addElement('select', $gradeboundaryname, $gradeboundary." $i", $percentages);
+            $mform->addElement('text', $gradeboundaryname, $gradeboundary." $i");
             if ($i == 1) {
                 $mform->addHelpButton($gradeboundaryname, 'gradeboundary', 'grades');
             }
             $mform->setDefault($gradeboundaryname, -1);
-            $mform->setType($gradeboundaryname, PARAM_INT);
+            $mform->setType($gradeboundaryname, PARAM_FLOAT);
 
             if (!$admin) {
                 $mform->disabledIf($gradeboundaryname, 'override', 'notchecked');
