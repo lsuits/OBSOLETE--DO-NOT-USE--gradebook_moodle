@@ -963,7 +963,13 @@ class grade_edit_tree_column_droplow extends grade_edit_tree_column_category {
     }
 
     public function get_category_cell($category, $levelclass, $params) {
-        $droplow = '<input type="text" size="3" id="droplow_'.$category->id.'" name="droplow_'.$category->id.'" value="'.$category->droplow.'" />';
+        $options = array(0 => get_string('none'));
+
+        for ($i=1; $i<=20; $i++) {
+            $options[$i] = $i;
+        }
+
+        $droplow = html_writer::select($options, 'droplow_'.$category->id, $category->droplow, null);
 
         if ($this->forced) {
             $droplow = $category->droplow;
