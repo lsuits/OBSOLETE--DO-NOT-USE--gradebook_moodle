@@ -178,12 +178,7 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     $temp = new admin_settingpage('letterssettings', $letters_settings_str, 'moodle/grade:manageletters');
     if ($ADMIN->fulltree) {
         $temp->add(new admin_setting_configcheckbox('grade_letters_custom',
-            new lang_string('letterscustompercents', 'grades'), new lang_string('letterscustompercents_help', 'grades'), 0));
-
-        $decimals = range(0, 5);
-
-        $temp->add(new admin_setting_configselect('grade_letters_decimals',
-            new lang_string('lettersdecimals', 'grades'), new lang_string('lettersdecimals_help', 'grades'), 2, $decimals));
+            new lang_string('letterscustompercents', 'grades'), get_string('letterscustompercents_help', 'grades'), 0));
     }
     $ADMIN->add('grades', $temp);
 

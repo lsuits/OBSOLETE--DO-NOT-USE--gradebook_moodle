@@ -44,6 +44,9 @@ if (!$edit) {
     require_capability('moodle/grade:manageletters', $context);
 }
 
+$custom = (bool) get_config('moodle', 'grade_letters_custom');
+$decimals = $custom ? (int) get_config('moodle', 'grade_decimalpoints') : 2;
+
 $returnurl = null;
 $editparam = null;
 if ($context->contextlevel == CONTEXT_SYSTEM or $context->contextlevel == CONTEXT_COURSECAT) {
@@ -65,6 +68,12 @@ if ($context->contextlevel == CONTEXT_SYSTEM or $context->contextlevel == CONTEX
     $returnurl = $CFG->wwwroot.'/grade/edit/letter/index.php?id='.$context->id;
     $editparam = '&edit=1';
 
+    if ($custom) {
+        $item = grade_item::fetch(array('itemtype' => 'course', 'courseid' => $course->id));
+
+        $decimals = $item ? $item->get_decimals() : $decimals;
+    }
+
     $gpr = new grade_plugin_return(array('type'=>'edit', 'plugin'=>'letter', 'courseid'=>$course->id));
 } else {
     print_error('invalidcourselevel');
@@ -75,9 +84,6 @@ $pagename  = get_string('letters', 'grades');
 
 $letters = grade_get_letters($context);
 $num = count($letters) + 3;
-
-$custom = (bool) get_config('moodle', 'grade_letters_custom');
-$decimals = $custom ? (int) get_config('moodle', 'grade_letters_decimals') : 2;
 
 //if were viewing the letters
 if (!$edit) {
