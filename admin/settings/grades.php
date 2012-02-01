@@ -183,7 +183,7 @@ if (has_capability('moodle/grade:manage', $systemcontext)
         $decimals = range(0, 5);
 
         $temp->add(new admin_setting_configselect('grade_letters_decimals',
-            new lang_string('lettersdecimals', 'grades'), new lang_string('lettersdecimals_help', 'grades'), 3, $decimals));
+            new lang_string('lettersdecimals', 'grades'), new lang_string('lettersdecimals_help', 'grades'), 2, $decimals));
     }
     $ADMIN->add('grades', $temp);
 
