@@ -1,0 +1,85 @@
+<?php
+
+///////////////////////////////////////////////////////////////////////////
+// NOTICE OF COPYRIGHT                                                   //
+//                                                                       //
+// Moodle - Modular Object-Oriented Dynamic Learning Environment         //
+//          http://moodle.org                                            //
+//                                                                       //
+// Copyright (C) 1999 onwards  Martin Dougiamas  http://moodle.com       //
+//                                                                       //
+// This program is free software; you can redistribute it and/or modify  //
+// it under the terms of the GNU General Public License as published by  //
+// the Free Software Foundation; either version 2 of the License, or     //
+// (at your option) any later version.                                   //
+//                                                                       //
+// This program is distributed in the hope that it will be useful,       //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+// GNU General Public License for more details:                          //
+//                                                                       //
+//          http://www.gnu.org/copyleft/gpl.html                         //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
+
+require_once '../../../config.php';
+require_once $CFG->dirroot.'/lib/gradelib.php';
+require_once $CFG->dirroot.'/grade/lib.php';
+require_once $CFG->dirroot.'/grade/report/quick_edit/lib.php';
+
+$courseid = required_param('id', PARAM_INT);
+$itemtype = optional_param('item', 'grade', PARAM_TEXT);
+$itemid = optional_param('itemid', 0, PARAM_INT);
+$groupid  = optional_param('group', null, PARAM_INT);
+
+$PAGE->set_url(new moodle_url('/grade/report/quick_edit/index.php', array(
+    'id' => $courseid,
+    'item' => $itemtype,
+    'itemid' => $itemid,
+    'group' => $groupid
+)));
+
+if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+    print_error('nocourseid');
+}
+
+require_login($course);
+
+$context = get_context_instance(CONTEXT_COURSE, $course->id);
+
+// This is the normal requirements
+require_capability('gradereport/quick_edit:view', $context);
+require_capability('moodle/grade:viewall', $context);
+require_capability('moodle/grade:edit', $context);
+// End permission
+
+$_s = function($key, $a = null) {
+    return get_string($key, 'gradereport_quick_edit');
+};
+
+$gpr = new grade_plugin_return(array(
+    'type' => 'report', 'plugin' => 'quick_edit', 'courseid' => $courseid
+));
+
+if (!isset($USER->grade_last_report)) {
+    $USER->grade_last_report = array();
+}
+$USER->grade_last_report[$course->id] = 'quick_edit';
+
+grade_regrade_final_grades($courseid);
+
+$reportname = $_s('pluginname');
+
+$PAGE->set_context($context);
+
+print_grade_page_head($course->id, 'report', 'quick_edit', $reportname, false);
+
+$report = new grade_report_quick_edit(
+    $courseid, $gpr, $context, $itemtype, $itemid, $group
+);
+
+echo $report->output();
+
+echo $OUTPUT->footer();
+
+?>
