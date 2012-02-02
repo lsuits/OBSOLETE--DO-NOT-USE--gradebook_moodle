@@ -31,6 +31,8 @@ require_once $CFG->libdir.'/formslib.php';
 class edit_letter_form extends moodleform {
 
     public function definition() {
+        global $DB;
+
         $mform =& $this->_form;
         $num   = $this->_customdata['num'];
         $admin = $this->_customdata['admin'];
@@ -54,12 +56,29 @@ class edit_letter_form extends moodleform {
         }
 
         $custom = get_config('moodle', 'grade_letters_custom');
+        $strict = get_config('moodle', 'grade_letters_strict');
+
+        $default = get_config('moodle', 'grade_letters_names');
+
+        if ($default and $scale = $DB->get_record('scale', array('id' => $default))) {
+            $default_letters = $scale->scale;
+        } else {
+            $default_letters = get_string('lettersdefaultletters', 'grades');
+        }
+
+        $default_letters = array_reverse(explode(',', $default_letters));
+        $letters = array_combine($default_letters, $default_letters);
 
         for($i=1; $i<$num+1; $i++) {
             $gradelettername = 'gradeletter'.$i;
             $gradeboundaryname = 'gradeboundary'.$i;
 
-            $mform->addElement('text', $gradelettername, $gradeletter." $i");
+            if ($strict) {
+                $mform->addElement('select', $gradelettername, $gradeletter." $i", $letters);
+            } else {
+                $mform->addElement('text', $gradelettername, $gradeletter." $i");
+            }
+
             if ($i == 1) {
                 $mform->addHelpButton($gradelettername, 'gradeletter', 'grades');
             }

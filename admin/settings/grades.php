@@ -178,7 +178,20 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     $temp = new admin_settingpage('letterssettings', $letters_settings_str, 'moodle/grade:manageletters');
     if ($ADMIN->fulltree) {
         $temp->add(new admin_setting_configcheckbox('grade_letters_custom',
-            new lang_string('letterscustompercents', 'grades'), get_string('letterscustompercents_help', 'grades'), 0));
+            new lang_string('letterscustompercents', 'grades'), new lang_string('letterscustompercents_help', 'grades'), 0));
+
+        $temp->add(new admin_setting_configcheckbox('grade_letters_strict',
+            new lang_string('lettersstrictletter', 'grades'), new lang_string('lettersstrictletter_help', 'grades'), 0));
+
+        $params = array('courseid' => 0);
+
+        $db_scales = $DB->get_records_menu('scale', $params, '', 'id, name');
+
+        $scales = array(0 => new lang_string('lettersdefaultletters', 'grades')) + $db_scales;
+
+        $temp->add(new admin_setting_configselect('grade_letters_names',
+            new lang_string('lettersnames', 'grades'),
+            new lang_string('lettersname_help', 'grades'), 0, $scales));
     }
     $ADMIN->add('grades', $temp);
 
