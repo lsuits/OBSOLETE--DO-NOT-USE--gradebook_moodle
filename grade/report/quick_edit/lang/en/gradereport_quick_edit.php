@@ -25,3 +25,6 @@
 // General Strings
 $string['pluginname'] = 'Quick Edit';
 $string['quick_edit:view'] = 'View the '.$string['pluginname'].' report';
+
+// Error Strings
+$string['notvalid'] = 'Not a valid Quick Edit screen: {$a}';

@@ -43,6 +43,10 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('nocourseid');
 }
 
+if (!in_array($itemtype, grade_report_quick_edit::valid_types())) {
+    print_error('notvalid', 'gradereport_quick_edit', '', $itemtype);
+}
+
 require_login($course);
 
 $context = get_context_instance(CONTEXT_COURSE, $course->id);
@@ -54,7 +58,7 @@ require_capability('moodle/grade:edit', $context);
 // End permission
 
 $_s = function($key, $a = null) {
-    return get_string($key, 'gradereport_quick_edit');
+    return get_string($key, 'gradereport_quick_edit', $a);
 };
 
 $gpr = new grade_plugin_return(array(

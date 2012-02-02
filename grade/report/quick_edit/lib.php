@@ -27,6 +27,27 @@ require_once($CFG->libdir.'/tablelib.php');
 
 class grade_report_quick_edit extends grade_report {
 
+    public static function valid_types() {
+        $screendir = dirname(__FILE__) . '/screens';
+
+        $is_valid = function($filename) use ($screendir) {
+            if (preg_match('/^\./', $filename)){
+                return false;
+            }
+
+            $file = $screendir . '/' . $filename;
+
+            if (is_file($file)) {
+                return false;
+            }
+
+            $plugin = $file . '/lib.php';
+            return file_exists($plugin);
+        };
+
+        return array_filter(scandir($screendir), $is_valid);
+    }
+
     function process_data($data) {
     }
 
