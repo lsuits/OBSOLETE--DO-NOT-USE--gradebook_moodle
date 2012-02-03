@@ -60,7 +60,7 @@ class quick_edit_grade extends quick_edit_screen {
             $OUTPUT->user_picture($user),
             $this->format_link('user', $user->id, $fullname),
             $this->item_range(),
-            $this->format_grade($grade, $this->item->get_decimals()),
+            $this->format_grade($grade),
             $this->format_feedback($grade)
         );
 
@@ -69,7 +69,7 @@ class quick_edit_grade extends quick_edit_screen {
 
     public function additional_cells($line, $grade) {
         if ($this->requires_extra) {
-            $line[] = $this->format_override($this->item, $grade);
+            $line[] = $this->format_override($grade);
         }
 
         return $line;

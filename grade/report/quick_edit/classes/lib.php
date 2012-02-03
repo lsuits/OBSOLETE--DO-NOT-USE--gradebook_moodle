@@ -43,15 +43,15 @@ abstract class quick_edit_screen {
         return "$min - $max";
     }
 
-    public function format_override($item, $grade) {
-        if ($item->itemtype == 'manual') {
+    public function format_override($grade) {
+        if (!$grade->grade_item->is_overridable_item()) {
             return get_string('notavailable', 'gradereport_quick_edit');
         }
 
         return $this->checkbox_attribute($grade, 'override', $grade->is_overridden());
     }
 
-    public function format_exclude($item, $grade) {
+    public function format_exclude($grade) {
         return $this->checkbox_attribute($grade, 'exclude', $grade->is_excluded());
     }
 
@@ -69,6 +69,8 @@ abstract class quick_edit_screen {
 
             $grade = new grade_grade($default, false);
         }
+
+        $grade->grade_item = $item;
 
         return $grade;
     }
@@ -94,7 +96,7 @@ abstract class quick_edit_screen {
             $this->make_toggle($key);
     }
 
-    private function checkbox_attribute($grade, $post_name, $is_checked) {
+    protected function checkbox_attribute($grade, $post_name, $is_checked) {
         $name = $post_name . '_' . $grade->itemid . '_' . $grade->userid;
 
         $attributes = array(
@@ -119,58 +121,56 @@ abstract class quick_edit_screen {
         );
     }
 
-    public function format_grade($grade, $decimals) {
-        $name = 'grade_' . $grade->itemid . '_' . $grade->userid;
-
+    public function format_grade($grade) {
         $finalgrade = $grade->finalgrade ?
-            format_float($grade->finalgrade, $decimals) :
+            format_float($grade->finalgrade, $grade->grade_item->get_decimals()) :
             '';
 
-        $attributes = array(
-            'type' => 'text',
-            'name' => $name,
-            'value' => $finalgrade
-        );
+        $is_disabled = ($grade->grade_item->is_overridable_item() and !$grade->is_overridden());
 
-        $hidden = array(
-            'type' => 'hidden',
-            'name' => 'old' . $name,
-            'value' => $finalgrade
-        );
-
-        return (
-            html_writer::empty_tag('input', $attributes) .
-            html_writer::empty_tag('input', $hidden)
-        );
+        return $this->text_attribute($grade, 'grade', $finalgrade, $is_disabled);
     }
 
     public function format_feedback($grade) {
-        $name = 'feedback_' . $grade->itemid . '_' . $grade->userid;
-
         $feedback = $grade->feedback ?
             format_text($grade->feedback, $grade->feedbackformat) :
             '';
 
+        $is_disabled = (
+            $grade->grade_item->is_overridable_item_feedback() and
+            !$grade->is_overridden()
+        );
+
+        return $this->text_attribute($grade, 'feedback', $feedback, $is_disabled);
+    }
+
+    public function heading() {
+        return get_string('pluginname', 'gradereport_quick_edit');
+    }
+
+    protected function text_attribute($grade, $post_name, $value, $is_disabled = false) {
+        $name = $post_name . '_' . $grade->itemid . '_' . $grade->userid;
+
         $attributes = array(
             'type' => 'text',
             'name' => $name,
-            'value' => $feedback
+            'value' => $value
         );
+
+        if ($is_disabled) {
+            $attributes['disabled'] = 'DISABLED';
+        }
 
         $hidden = array(
             'type' => 'hidden',
             'name' => 'old' . $name,
-            'value' => $feedback
+            'value' => $value
         );
 
         return (
             html_writer::empty_tag('input', $attributes) .
             html_writer::empty_tag('input', $hidden)
         );
-    }
-
-    public function heading() {
-        return get_string('pluginname', 'gradereport_quick_edit');
     }
 
     public abstract function init();
