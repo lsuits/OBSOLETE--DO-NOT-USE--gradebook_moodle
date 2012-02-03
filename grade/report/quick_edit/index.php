@@ -29,7 +29,7 @@ require_once $CFG->dirroot.'/grade/report/quick_edit/lib.php';
 
 $courseid = required_param('id', PARAM_INT);
 $itemtype = optional_param('item', 'select', PARAM_TEXT);
-$itemid = optional_param('itemid', 0, PARAM_INT);
+$itemid = optional_param('itemid', null, PARAM_INT);
 $groupid  = optional_param('group', null, PARAM_INT);
 
 $PAGE->set_url(new moodle_url('/grade/report/quick_edit/index.php', array(
@@ -57,10 +57,6 @@ require_capability('moodle/grade:viewall', $context);
 require_capability('moodle/grade:edit', $context);
 // End permission
 
-$_s = function($key, $a = null) {
-    return get_string($key, 'gradereport_quick_edit', $a);
-};
-
 $gpr = new grade_plugin_return(array(
     'type' => 'report', 'plugin' => 'quick_edit', 'courseid' => $courseid
 ));
@@ -72,15 +68,15 @@ $USER->grade_last_report[$course->id] = 'quick_edit';
 
 grade_regrade_final_grades($courseid);
 
-$reportname = $_s('pluginname');
-
 $PAGE->set_context($context);
-
-print_grade_page_head($course->id, 'report', 'quick_edit', $reportname, false);
 
 $report = new grade_report_quick_edit(
     $courseid, $gpr, $context, $itemtype, $itemid, $groupid
 );
+
+$reportname = $report->screen->heading();
+
+print_grade_page_head($course->id, 'report', 'quick_edit', $reportname, false);
 
 echo $report->output();
 
