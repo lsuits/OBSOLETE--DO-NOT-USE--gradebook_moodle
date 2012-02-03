@@ -2,6 +2,8 @@
 
 class quick_edit_grade extends quick_edit_screen {
 
+    private $requires_extra;
+
     public function init() {
         $add = $this->itemid ?
             array('id' => $this->itemid) :
@@ -15,6 +17,8 @@ class quick_edit_grade extends quick_edit_screen {
 
         $this->users = get_role_users($roleids, $this->context, false, '',
             'u.lastname, u.firstname', null, $this->groupid);
+
+        $this->requires_extra = $this->item->itemtype != 'manual';
     }
 
     public function html() {
@@ -32,33 +36,51 @@ class quick_edit_grade extends quick_edit_screen {
     }
 
     public function headers() {
-        return array(
+        $headers = array(
             '',
             get_string('firstname') . ' / ' . get_string('lastname'),
             get_string('range', 'grades'),
             get_string('grade', 'grades'),
             get_string('feedback', 'grades')
         );
+
+        return $this->additional_headers($headers);
     }
 
     public function format_line($user) {
         global $OUTPUT;
 
-        $grade = grade_grade::fetch(array(
-            'itemid' => $this->item->id, 'userid' => $user->id
-        ));
+        $grade = $this->fetch_grade_or_default($this->item, $user);
 
         $fullname = fullname($user);
 
         $user->imagealt = $fullname;
 
-        return array(
+        $line = array(
             $OUTPUT->user_picture($user),
             $this->format_link('user', $user->id, $fullname),
             $this->item_range(),
             $this->format_grade($grade, $this->item->get_decimals()),
             $this->format_feedback($grade)
         );
+
+        return $this->additional_cells($line, $grade);
+    }
+
+    public function additional_cells($line, $grade) {
+        if ($this->requires_extra) {
+            $line[] = $this->format_override($this->item, $grade);
+        }
+
+        return $line;
+    }
+
+    public function additional_headers($headers) {
+        if ($this->requires_extra) {
+            $headers[] = $this->make_toggle_links('override');
+        }
+
+        return $headers;
     }
 
     public function item_range() {

@@ -4,6 +4,8 @@ class quick_edit_user extends quick_edit_screen {
 
     private $categories = array();
 
+    private $structure;
+
     public function init() {
         global $DB;
 
@@ -14,6 +16,8 @@ class quick_edit_user extends quick_edit_screen {
         $filter_items = grade_report_quick_edit::only_items();
 
         $this->grade_items = array_filter(grade_item::fetch_all($params), $filter_items);
+
+        $this->structure = new grade_structure();
     }
 
     public function html() {
@@ -38,20 +42,18 @@ class quick_edit_user extends quick_edit_screen {
             get_string('range', 'grades'),
             get_string('grade', 'grades'),
             get_string('feedback', 'grades'),
-            get_string('override', 'gradereport_quick_edit'),
-            get_string('exclude', 'gradereport_quick_edit')
+            $this->make_toggle_links('override'),
+            $this->make_toggle_links('exclude')
         );
     }
 
     public function format_line($item) {
         global $OUTPUT;
 
-        $grade = grade_grade::fetch(array(
-            'itemid' => $item->id, 'userid' => $this->user->id
-        ));
+        $grade = $this->fetch_grade_or_default($item, $this->user);
 
         return array(
-            $OUTPUT->pix_icon('t/' . $item->itemtype . '_item', $item->itemname),
+            $this->format_icon($item),
             $this->format_link('grade', $item->id, $item->itemname),
             $this->category($item)->get_name(),
             $this->format_range($item),
@@ -60,6 +62,12 @@ class quick_edit_user extends quick_edit_screen {
             $this->format_override($item, $grade),
             $this->format_exclude($item, $grade)
         );
+    }
+
+    private function format_icon($item) {
+        $element = array('type' => 'item', 'object' => $item);
+
+        return $this->structure->get_element_icon($element);
     }
 
     private function category($item) {
