@@ -39,7 +39,9 @@ $PAGE->set_url(new moodle_url('/grade/report/quick_edit/index.php', array(
     'group' => $groupid
 )));
 
-if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+$course_params = array('id' => $courseid);
+
+if (!$course = $DB->get_record('course', $course_params)) {
     print_error('nocourseid');
 }
 
@@ -61,14 +63,7 @@ $gpr = new grade_plugin_return(array(
     'type' => 'report', 'plugin' => 'quick_edit', 'courseid' => $courseid
 ));
 
-if (!isset($USER->grade_last_report)) {
-    $USER->grade_last_report = array();
-}
-$USER->grade_last_report[$course->id] = 'quick_edit';
-
 grade_regrade_final_grades($courseid);
-
-$PAGE->set_context($context);
 
 $report = new grade_report_quick_edit(
     $courseid, $gpr, $context, $itemtype, $itemid, $groupid
@@ -76,7 +71,22 @@ $report = new grade_report_quick_edit(
 
 $reportname = $report->screen->heading();
 
-print_grade_page_head($course->id, 'report', 'quick_edit', $reportname, false);
+$pluginname = get_string('pluginname', 'gradereport_quick_edit');
+
+$report_url = new moodle_url('/grade/report/index.php', $course_params);
+$edit_url = new moodle_url('/grade/report/quick_edit/index.php', $course_params);
+
+$PAGE->navbar->add(get_string('gradeadministration', 'grades'));
+$PAGE->navbar->add(get_string('pluginname', 'gradereport_grader'), $report_url);
+
+if ($reportname != $pluginname) {
+    $PAGE->navbar->add($pluginname, $edit_url);
+    $PAGE->navbar->add($reportname);
+} else {
+    $PAGE->navbar->add($pluginname);
+}
+
+print_grade_page_head($course->id, 'report', 'quick_edit', $reportname);
 
 echo $report->output();
 

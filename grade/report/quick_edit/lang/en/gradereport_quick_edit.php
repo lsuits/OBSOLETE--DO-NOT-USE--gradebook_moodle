@@ -26,5 +26,10 @@
 $string['pluginname'] = 'Quick Edit';
 $string['quick_edit:view'] = 'View the '.$string['pluginname'].' report';
 
+$string['exclude'] = 'Exclude';
+$string['override'] = 'Override';
+$string['assessmentname'] = 'Assessment Name';
+$string['notavailable'] = 'NA';
+
 // Error Strings
 $string['notvalid'] = 'Not a valid Quick Edit screen: {$a}';

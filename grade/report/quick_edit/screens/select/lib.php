@@ -7,9 +7,7 @@ class quick_edit_select extends quick_edit_screen {
 
         $params = array('courseid' => $this->courseid);
 
-        $filter_items = function($item) {
-            return $item->itemtype != 'course' and $item->itemtype != 'category';
-        };
+        $filter_items = grade_report_quick_edit::only_items();
 
         $this->grade_items = array_filter(grade_item::fetch_all($params), $filter_items);
 

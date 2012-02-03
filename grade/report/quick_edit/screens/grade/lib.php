@@ -54,7 +54,7 @@ class quick_edit_grade extends quick_edit_screen {
 
         return array(
             $OUTPUT->user_picture($user),
-            $fullname,
+            $this->format_link('user', $user->id, $fullname),
             $this->item_range(),
             $this->format_grade($grade, $this->item->get_decimals()),
             $this->format_feedback($grade)
