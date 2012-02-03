@@ -56,6 +56,12 @@ class grade_report_quick_edit extends grade_report {
         return 'quick_edit_' . $screen;
     }
 
+    public static function only_items() {
+        return function($item) {
+            return $item->itemtype != 'course' and $item->itemtype != 'category';
+        };
+    }
+
     function process_data($data) {
     }
 

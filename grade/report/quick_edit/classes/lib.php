@@ -19,6 +19,21 @@ abstract class quick_edit_screen {
         $this->init();
     }
 
+    public function format_link($screen, $itemid, $display = null) {
+        $url = new moodle_url('/grade/report/quick_edit/index.php', array(
+            'id' => $this->courseid,
+            'item' => $screen,
+            'itemid' => $itemid,
+            'group' => $this->groupid
+        ));
+
+        if ($display) {
+            return html_writer::link($url, $display);
+        } else {
+            return $url;
+        }
+    }
+
     public function format_range($item) {
         $decimals = $item->get_decimals();
 
@@ -26,6 +41,43 @@ abstract class quick_edit_screen {
         $max = format_float($item->grademax, $decimals);
 
         return "$min - $max";
+    }
+
+    public function format_override($item, $grade) {
+        if ($item->itemtype == 'manual') {
+            return get_string('notavailable', 'gradereport_quick_edit');
+        }
+
+        return $this->checkbox_attribute($grade, 'override', $grade->is_overridden());
+    }
+
+    public function format_exclude($item, $grade) {
+        return $this->checkbox_attribute($grade, 'excldue', $grade->is_excluded());
+    }
+
+    private function checkbox_attribute($grade, $post_name, $is_checked) {
+        $name = $post_name . '_' . $grade->itemid . '_' . $grade->userid;
+
+        $attributes = array(
+            'type' => 'checkbox',
+            'name' => $name,
+            'value' => 1
+        );
+
+        $hidden = array(
+            'type' => 'hidden',
+            'name' => 'old' . $name
+        );
+
+        if ($is_checked) {
+            $attributes['checked'] = 'CHECKED';
+            $hidden['value'] = 1;
+        }
+
+        return (
+            html_writer::empty_tag('input', $attributes) .
+            html_writer::empty_tag('input', $hidden)
+        );
     }
 
     public function format_grade($grade, $decimals) {
@@ -78,7 +130,9 @@ abstract class quick_edit_screen {
         );
     }
 
-    public abstract function heading();
+    public function heading() {
+        return get_string('pluginname', 'gradereport_quick_edit');
+    }
 
     public abstract function init();
 
