@@ -28,7 +28,7 @@ require_once $CFG->dirroot.'/grade/lib.php';
 require_once $CFG->dirroot.'/grade/report/quick_edit/lib.php';
 
 $courseid = required_param('id', PARAM_INT);
-$itemtype = optional_param('item', 'grade', PARAM_TEXT);
+$itemtype = optional_param('item', 'select', PARAM_TEXT);
 $itemid = optional_param('itemid', 0, PARAM_INT);
 $groupid  = optional_param('group', null, PARAM_INT);
 
@@ -43,7 +43,7 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('nocourseid');
 }
 
-if (!in_array($itemtype, grade_report_quick_edit::valid_types())) {
+if (!in_array($itemtype, grade_report_quick_edit::valid_screens())) {
     print_error('notvalid', 'gradereport_quick_edit', '', $itemtype);
 }
 
@@ -79,7 +79,7 @@ $PAGE->set_context($context);
 print_grade_page_head($course->id, 'report', 'quick_edit', $reportname, false);
 
 $report = new grade_report_quick_edit(
-    $courseid, $gpr, $context, $itemtype, $itemid, $group
+    $courseid, $gpr, $context, $itemtype, $itemid, $groupid
 );
 
 echo $report->output();

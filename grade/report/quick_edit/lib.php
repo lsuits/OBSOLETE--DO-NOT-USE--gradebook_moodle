@@ -23,11 +23,11 @@
 ///////////////////////////////////////////////////////////////////////////
 
 require_once($CFG->dirroot . '/grade/report/lib.php');
-require_once($CFG->libdir.'/tablelib.php');
+require_once($CFG->dirroot . '/grade/report/quick_edit/classes/lib.php');
 
 class grade_report_quick_edit extends grade_report {
 
-    public static function valid_types() {
+    public static function valid_screens() {
         $screendir = dirname(__FILE__) . '/screens';
 
         $is_valid = function($filename) use ($screendir) {
@@ -48,6 +48,14 @@ class grade_report_quick_edit extends grade_report {
         return array_filter(scandir($screendir), $is_valid);
     }
 
+    public static function classname($screen) {
+        $screendir = dirname(__FILE__) . '/screens/' . $screen;
+
+        require_once $screendir . '/lib.php';
+
+        return 'quick_edit_' . $screen;
+    }
+
     function process_data($data) {
     }
 
@@ -60,8 +68,13 @@ class grade_report_quick_edit extends grade_report {
 
     function __construct($courseid, $gpr, $context, $itemtype, $itemid, $groupid=null) {
         parent::__construct($courseid, $gpr, $context);
+
+        $class = self::classname($itemtype);
+
+        $this->screen = new $class($courseid, $itemid, $groupid);
     }
 
     function output() {
+        return $this->screen->html();
     }
 }
