@@ -52,7 +52,46 @@ abstract class quick_edit_screen {
     }
 
     public function format_exclude($item, $grade) {
-        return $this->checkbox_attribute($grade, 'excldue', $grade->is_excluded());
+        return $this->checkbox_attribute($grade, 'exclude', $grade->is_excluded());
+    }
+
+    public function fetch_grade_or_default($item, $user) {
+        $grade = grade_grade::fetch(array(
+            'itemid' => $item->id, 'userid' => $user->id
+        ));
+
+        if (!$grade) {
+            $default = new stdClass;
+
+            $default->userid = $user->id;
+            $default->itemid = $item->id;
+            $default->feedback = '';
+
+            $grade = new grade_grade($default, false);
+        }
+
+        return $grade;
+    }
+
+    public function make_toggle($key) {
+        $attrs = array('href' => '#');
+
+        $all = html_writer::tag('a', get_string('all'), $attrs + array(
+            'class' => 'include_all ' . $key
+        ));
+
+        $none = html_writer::tag('a', get_string('none'), $attrs + array(
+            'class' => 'include_none ' . $key
+        ));
+
+        return html_writer::tag('span', "$all / $none", array(
+            'class' => 'inclusion_links'
+        ));
+    }
+
+    public function make_toggle_links($key) {
+        return get_string($key, 'gradereport_quick_edit') . ' ' .
+            $this->make_toggle($key);
     }
 
     private function checkbox_attribute($grade, $post_name, $is_checked) {
