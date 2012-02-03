@@ -57,10 +57,10 @@ class quick_edit_user extends quick_edit_screen {
             $this->format_link('grade', $item->id, $item->itemname),
             $this->category($item)->get_name(),
             $this->format_range($item),
-            $this->format_grade($grade, $item->get_decimals()),
+            $this->format_grade($grade),
             $this->format_feedback($grade),
-            $this->format_override($item, $grade),
-            $this->format_exclude($item, $grade)
+            $this->format_override($grade),
+            $this->format_exclude($grade)
         );
     }
 
