@@ -1,5 +1,14 @@
 <?php
 
+abstract class post_processor {
+    abstract class function handle($data);
+}
+
+class quick_edit_grade_processor extends post_processor {
+    function handle($data) {
+    }
+}
+
 abstract class quick_edit_screen {
     var $courseid;
 
@@ -176,4 +185,8 @@ abstract class quick_edit_screen {
     public abstract function init();
 
     public abstract function html();
+
+    public function processor() {
+        return new quick_edit_grade_processor();
+    }
 }

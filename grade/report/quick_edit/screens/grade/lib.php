@@ -5,11 +5,10 @@ class quick_edit_grade extends quick_edit_screen {
     private $requires_extra;
 
     public function init() {
-        $add = $this->itemid ?
-            array('id' => $this->itemid) :
-            array('itemtype' => 'manual');
-
-        $params = array('courseid' => $this->courseid) + $add;
+        $params = array(
+            'id' => $this->itemid,
+            'courseid' => $this->courseid
+        );
 
         $roleids = explode(',', get_config('moodle', 'gradebookroles'));
 
@@ -18,7 +17,7 @@ class quick_edit_grade extends quick_edit_screen {
         $this->users = get_role_users($roleids, $this->context, false, '',
             'u.lastname, u.firstname', null, $this->groupid);
 
-        $this->requires_extra = $this->item->itemtype != 'manual';
+        $this->requires_extra = !$this->item->is_manual_item();
     }
 
     public function html() {
