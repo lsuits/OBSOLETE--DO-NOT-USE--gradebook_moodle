@@ -1,15 +1,29 @@
 <?php
 
-class quick_edit_user extends quick_edit_tablelike {
+class quick_edit_user extends quick_edit_tablelike implements selectable_items {
 
     private $categories = array();
 
     private $structure;
 
-    public function init() {
+    public function description() {
+        return get_string('gradeitems', 'grades');;
+    }
+
+    public function options() {
+        return array_map(function($item) { return $item->get_name(); }, $this->items);
+    }
+
+    public function item_type() {
+        return 'grade';
+    }
+
+    public function init($self_item_is_empty = false) {
         global $DB;
 
-        $this->user = $DB->get_record('user', array('id' => $this->itemid));
+        if (!$self_item_is_empty) {
+            $this->user = $DB->get_record('user', array('id' => $this->itemid));
+        }
 
         $params = array('courseid' => $this->courseid);
 

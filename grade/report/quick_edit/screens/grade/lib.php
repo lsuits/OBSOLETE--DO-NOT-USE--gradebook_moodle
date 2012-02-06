@@ -1,12 +1,33 @@
 <?php
 
-class quick_edit_grade extends quick_edit_tablelike {
+class quick_edit_grade extends quick_edit_tablelike implements selectable_items {
 
     private $requires_extra;
 
     private $structure;
 
-    public function init() {
+    public function description() {
+        return get_string('users');
+    }
+
+    public function options() {
+        return array_map(function($user) { return fullname($user); }, $this->items);
+    }
+
+    public function item_type() {
+        return 'user';
+    }
+
+    public function init($self_item_is_empty = false) {
+        $roleids = explode(',', get_config('moodle', 'gradebookroles'));
+
+        $this->items = get_role_users($roleids, $this->context, false, '',
+                'u.lastname, u.firstname', null, $this->groupid);
+
+        if ($self_item_is_empty) {
+            return;
+        }
+
         global $DB;
 
         $params = array(
@@ -14,12 +35,7 @@ class quick_edit_grade extends quick_edit_tablelike {
             'courseid' => $this->courseid
         );
 
-        $roleids = explode(',', get_config('moodle', 'gradebookroles'));
-
         $this->item = grade_item::fetch($params);
-
-        $this->items = get_role_users($roleids, $this->context, false, '',
-            'u.lastname, u.firstname', null, $this->groupid);
 
         $this->requires_extra = !$this->item->is_manual_item();
 

@@ -2,14 +2,8 @@
 
 // TODO: custom form with group selector
 class quick_edit_select extends quick_edit_screen {
-    public function init() {
+    public function init($self_item_is_empty = false) {
         global $DB;
-
-        $params = array('courseid' => $this->courseid);
-
-        $filter_items = grade_report_quick_edit::only_items();
-
-        $this->grade_items = array_filter(grade_item::fetch_all($params), $filter_items);
 
         $this->item = $DB->get_record('course', array('id' => $this->courseid));
     }
@@ -17,18 +11,34 @@ class quick_edit_select extends quick_edit_screen {
     public function html() {
         global $OUTPUT;
 
-        $map = function($item) { return $item->itemname; };
+        $html = '';
 
-        $grade_options = array_map($map, $this->grade_items);
+        $types = grade_report_quick_edit::valid_screens();
 
-        $params = array(
-            'id' => $this->courseid,
-            'item' => 'grade',
-            'group' => $this->groupid
-        );
+        foreach ($types as $type) {
+            if ($type == 'select') continue;
 
-        $url = new moodle_url('/grade/report/quick_edit/index.php', $params);
+            $class = grade_report_quick_edit::classname($type);
 
-        echo $OUTPUT->single_select($url, 'itemid', $grade_options, $this->itemid);
+            $screen = new $class($this->courseid, null, $this->groupid);
+
+            if (!method_exists($screen, 'options')) {
+                continue;
+            }
+
+            $params = array(
+                'id' => $this->courseid,
+                'item' => $screen->item_type(),
+                'group' => $this->groupid
+            );
+
+            $url = new moodle_url('/grade/report/quick_edit/index.php', $params);
+
+            $html .= $OUTPUT->heading($screen->description());
+
+            $html .= $OUTPUT->single_select($url, 'itemid', $screen->options());
+        }
+
+        return $html;
     }
 }
