@@ -1,13 +1,7 @@
 <?php
 
-abstract class post_processor {
-    abstract class function handle($data);
-}
-
-class quick_edit_grade_processor extends post_processor {
-    function handle($data) {
-    }
-}
+require_once $CFG->dirroot . '/grade/report/quick_edit/classes/uilib.php';
+require_once $CFG->dirroot . '/grade/report/quick_edit/classes/datalib.php';
 
 abstract class quick_edit_screen {
     var $courseid;
@@ -41,27 +35,6 @@ abstract class quick_edit_screen {
         } else {
             return $url;
         }
-    }
-
-    public function format_range($item) {
-        $decimals = $item->get_decimals();
-
-        $min = format_float($item->grademin, $decimals);
-        $max = format_float($item->grademax, $decimals);
-
-        return "$min - $max";
-    }
-
-    public function format_override($grade) {
-        if (!$grade->grade_item->is_overridable_item()) {
-            return get_string('notavailable', 'gradereport_quick_edit');
-        }
-
-        return $this->checkbox_attribute($grade, 'override', $grade->is_overridden());
-    }
-
-    public function format_exclude($grade) {
-        return $this->checkbox_attribute($grade, 'exclude', $grade->is_excluded());
     }
 
     public function fetch_grade_or_default($item, $user) {
@@ -105,88 +78,45 @@ abstract class quick_edit_screen {
             $this->make_toggle($key);
     }
 
-    protected function checkbox_attribute($grade, $post_name, $is_checked) {
-        $name = $post_name . '_' . $grade->itemid . '_' . $grade->userid;
-
-        $attributes = array(
-            'type' => 'checkbox',
-            'name' => $name,
-            'value' => 1
-        );
-
-        $hidden = array(
-            'type' => 'hidden',
-            'name' => 'old' . $name
-        );
-
-        if ($is_checked) {
-            $attributes['checked'] = 'CHECKED';
-            $hidden['value'] = 1;
-        }
-
-        return (
-            html_writer::empty_tag('input', $attributes) .
-            html_writer::empty_tag('input', $hidden)
-        );
-    }
-
-    public function format_grade($grade) {
-        $finalgrade = $grade->finalgrade ?
-            format_float($grade->finalgrade, $grade->grade_item->get_decimals()) :
-            '';
-
-        $is_disabled = ($grade->grade_item->is_overridable_item() and !$grade->is_overridden());
-
-        return $this->text_attribute($grade, 'grade', $finalgrade, $is_disabled);
-    }
-
-    public function format_feedback($grade) {
-        $feedback = $grade->feedback ?
-            format_text($grade->feedback, $grade->feedbackformat) :
-            '';
-
-        $is_disabled = (
-            $grade->grade_item->is_overridable_item_feedback() and
-            !$grade->is_overridden()
-        );
-
-        return $this->text_attribute($grade, 'feedback', $feedback, $is_disabled);
-    }
-
     public function heading() {
         return get_string('pluginname', 'gradereport_quick_edit');
-    }
-
-    protected function text_attribute($grade, $post_name, $value, $is_disabled = false) {
-        $name = $post_name . '_' . $grade->itemid . '_' . $grade->userid;
-
-        $attributes = array(
-            'type' => 'text',
-            'name' => $name,
-            'value' => $value
-        );
-
-        if ($is_disabled) {
-            $attributes['disabled'] = 'DISABLED';
-        }
-
-        $hidden = array(
-            'type' => 'hidden',
-            'name' => 'old' . $name,
-            'value' => $value
-        );
-
-        return (
-            html_writer::empty_tag('input', $attributes) .
-            html_writer::empty_tag('input', $hidden)
-        );
     }
 
     public abstract function init();
 
     public abstract function html();
 
+    public function factory() {
+        if (empty($this->__factory)) {
+            $this->__factory = new quick_edit_grade_ui_factory();
+        }
+
+        return $this->__factory;
+    }
+
     public function processor() {
-        return new quick_edit_grade_processor();
+        return new quick_edit_grade_processor($this->courseid);
+    }
+}
+
+abstract class quick_edit_tablelike extends quick_edit_screen {
+    var $items;
+
+    public abstract function headers();
+
+    public abstract function format_line($item);
+
+    public function html() {
+        $table = new html_table();
+
+        $table->head = $this->headers();
+
+        $table->data = array();
+
+        foreach ($this->items as $item) {
+            $table->data[] = $this->format_line($item);
+        }
+
+        return html_writer::table($table);
     }
 }
