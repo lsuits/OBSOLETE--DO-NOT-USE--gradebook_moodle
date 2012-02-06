@@ -1,6 +1,6 @@
 <?php
 
-class quick_edit_user extends quick_edit_screen {
+class quick_edit_user extends quick_edit_tablelike {
 
     private $categories = array();
 
@@ -15,23 +15,12 @@ class quick_edit_user extends quick_edit_screen {
 
         $filter_items = grade_report_quick_edit::only_items();
 
-        $this->grade_items = array_filter(grade_item::fetch_all($params), $filter_items);
+        $this->items= array_filter(grade_item::fetch_all($params), $filter_items);
 
         $this->structure = new grade_structure();
-    }
-
-    public function html() {
-        $table = new html_table();
-
-        $table->head = $this->headers();
-
-        $table->data = array();
-
-        foreach ($this->grade_items as $item) {
-            $table->data[] = $this->format_line($item);
-        }
-
-        return html_writer::table($table);
+        $this->structure->modinfo = get_fast_modinfo(
+            $DB->get_record('course', array('id' => $this->courseid))
+        );
     }
 
     public function headers() {
@@ -56,11 +45,12 @@ class quick_edit_user extends quick_edit_screen {
             $this->format_icon($item),
             $this->format_link('grade', $item->id, $item->itemname),
             $this->category($item)->get_name(),
-            $this->format_range($item),
-            $this->format_grade($grade),
-            $this->format_feedback($grade),
-            $this->format_override($grade),
-            $this->format_exclude($grade)
+            $this->factory()->create('range')->format($item),
+            $this->factory()->create('finalgrade')->format($grade) .
+            $this->structure->get_grade_analysis_icon($grade),
+            $this->factory()->create('feedback')->format($grade),
+            $this->factory()->create('override')->format($grade),
+            $this->factory()->create('exclude')->format($grade)
         );
     }
 
