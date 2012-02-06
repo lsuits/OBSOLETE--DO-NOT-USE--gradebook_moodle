@@ -94,6 +94,18 @@ abstract class quick_edit_screen {
 
     public abstract function html();
 
+    public function js() {
+        global $PAGE;
+
+        $module = array(
+            'name' => 'gradereport_quick_edit',
+            'fullpath' => '/grade/report/quick_edit/js/quick_edit.js',
+            'requires' => array('base', 'dom', 'event', 'io-base');
+        );
+
+        $PAGE->requires->js_init_call('M.gradereport_quick_edit.init', array(), false, $module);
+    }
+
     public function factory() {
         if (empty($this->__factory)) {
             $this->__factory = new quick_edit_grade_ui_factory();
