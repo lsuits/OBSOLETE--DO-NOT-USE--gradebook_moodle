@@ -81,10 +81,10 @@ class quick_edit_grade_processor extends post_processor {
             if ($posted == -1) {
                 $finalgrade = null;
             } else {
-                $finalgrade = $posted;
+                $finalgrade = $value;
             }
         } else {
-            $finalgrade = unformat_float($posted);
+            $finalgrade = unformat_float($value);
         }
 
         $errorstr = '';

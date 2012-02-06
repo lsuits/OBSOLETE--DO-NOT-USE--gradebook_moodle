@@ -3,6 +3,14 @@
 require_once $CFG->dirroot . '/grade/report/quick_edit/classes/uilib.php';
 require_once $CFG->dirroot . '/grade/report/quick_edit/classes/datalib.php';
 
+interface selectable_items {
+    public function description();
+
+    public function options();
+
+    public function item_type();
+}
+
 abstract class quick_edit_screen {
     var $courseid;
 
@@ -19,7 +27,7 @@ abstract class quick_edit_screen {
 
         $this->context = get_context_instance(CONTEXT_COURSE, $this->courseid);
 
-        $this->init();
+        $this->init(empty($itemid));
     }
 
     public function format_link($screen, $itemid, $display = null) {
@@ -82,7 +90,7 @@ abstract class quick_edit_screen {
         return get_string('pluginname', 'gradereport_quick_edit');
     }
 
-    public abstract function init();
+    public abstract function init($self_item_is_empty = false);
 
     public abstract function html();
 
@@ -117,6 +125,20 @@ abstract class quick_edit_tablelike extends quick_edit_screen {
             $table->data[] = $this->format_line($item);
         }
 
-        return html_writer::table($table);
+        $button_attr = array('class' => 'quick_edit_buttons');
+        $button_html = implode(' ', $this->buttons());
+
+        $buttons = html_writer::tag('div', $button_html, $button_attr);
+
+        return html_writer::tag('form',
+            html_writer::table($table) . $buttons,
+            array('method' => 'POST')
+        );
+    }
+
+    public function buttons() {
+        $save = html_writer::empty_tag('input', array('type' => 'submit'));
+
+        return array($save);
     }
 }

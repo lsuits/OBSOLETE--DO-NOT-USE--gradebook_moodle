@@ -88,6 +88,16 @@ if ($reportname != $pluginname) {
 
 print_grade_page_head($course->id, 'report', 'quick_edit', $reportname);
 
+if ($data = data_submitted()) {
+    $warnings = $report->process_data($data);
+}
+
+if (!empty($warnings)) {
+    foreach ($warnings as $warning) {
+        echo $OUTPUT->notification($warning);
+    }
+}
+
 echo $report->output();
 
 echo $OUTPUT->footer();
