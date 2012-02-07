@@ -69,11 +69,11 @@ abstract class quick_edit_screen {
         $attrs = array('href' => '#');
 
         $all = html_writer::tag('a', get_string('all'), $attrs + array(
-            'class' => 'include_all ' . $key
+            'class' => 'include all ' . $key
         ));
 
         $none = html_writer::tag('a', get_string('none'), $attrs + array(
-            'class' => 'include_none ' . $key
+            'class' => 'include none ' . $key
         ));
 
         return html_writer::tag('span', "$all / $none", array(
@@ -100,7 +100,7 @@ abstract class quick_edit_screen {
         $module = array(
             'name' => 'gradereport_quick_edit',
             'fullpath' => '/grade/report/quick_edit/js/quick_edit.js',
-            'requires' => array('base', 'dom', 'event', 'io-base');
+            'requires' => array('base', 'dom', 'event', 'io-base')
         );
 
         $PAGE->requires->js_init_call('M.gradereport_quick_edit.init', array(), false, $module);

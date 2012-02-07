@@ -79,6 +79,9 @@ class grade_report_quick_edit extends grade_report {
         $class = self::classname($itemtype);
 
         $this->screen = new $class($courseid, $itemid, $groupid);
+
+        // Load custom or predifined js
+        $this->screen->js();
     }
 
     function output() {
