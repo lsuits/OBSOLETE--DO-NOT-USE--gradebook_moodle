@@ -1,19 +1,16 @@
 M.gradereport_quick_edit = {};
 
 M.gradereport_quick_edit.init = function(Y) {
-    var toggle = function(check) {
-        return function(input) {
-            if (check) {
-                input.setAttribute('checked', 'CHECKED');
-            } else {
-                input.removeAttribute('checked');
-            }
-        };
-    };
-
-    // Made toggle links
+    // Make toggle links
     Y.all('.include').each(function(link) {
         var type = link.getAttribute('class').split(" ")[2];
+
+        var toggle = function(checked) {
+            return function(input) {
+                input.getDOMNode().checked = checked;
+                Y.Event.simulate(input.getDOMNode(), 'change');
+            };
+        };
 
         link.on('click', function() {
             Y.all('input[name^=' + type + ']').each(toggle(link.hasClass('all')));
@@ -33,11 +30,7 @@ M.gradereport_quick_edit.init = function(Y) {
             var interest = '_' + itemid + '_' + userid;
 
             Y.all('input[name$=' + interest + ']').filter('input[type=text]').each(function(text) {
-                if (!checked) {
-                    text.setAttribute('disabled', 'DISABLED');
-                } else {
-                    text.removeAttribute('disabled');
-                }
+                text.getDOMNode().disabled = !checked;
             });
         });
     });

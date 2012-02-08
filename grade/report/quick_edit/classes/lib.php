@@ -100,7 +100,7 @@ abstract class quick_edit_screen {
         $module = array(
             'name' => 'gradereport_quick_edit',
             'fullpath' => '/grade/report/quick_edit/js/quick_edit.js',
-            'requires' => array('base', 'dom', 'event', 'io-base')
+            'requires' => array('base', 'dom', 'event', 'event-simulate', 'io-base')
         );
 
         $PAGE->requires->js_init_call('M.gradereport_quick_edit.init', array(), false, $module);
