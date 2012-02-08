@@ -1,6 +1,5 @@
 <?php
 
-// TODO: custom form with group selector
 class quick_edit_select extends quick_edit_screen {
     public function init($self_item_is_empty = false) {
         global $DB;
@@ -16,13 +15,11 @@ class quick_edit_select extends quick_edit_screen {
         $types = grade_report_quick_edit::valid_screens();
 
         foreach ($types as $type) {
-            if ($type == 'select') continue;
-
             $class = grade_report_quick_edit::classname($type);
 
             $screen = new $class($this->courseid, null, $this->groupid);
 
-            if (!method_exists($screen, 'options')) {
+            if (!$screen instanceof selectable_items) {
                 continue;
             }
 

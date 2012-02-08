@@ -33,6 +33,18 @@ abstract class quick_edit_ui_element {
         $this->value = $value;
     }
 
+    function is_checkbox() {
+        return false;
+    }
+
+    function is_textbox() {
+        return false;
+    }
+
+    function is_dropdown() {
+        return false;
+    }
+
     abstract function html();
 }
 
@@ -56,6 +68,10 @@ class quick_edit_text_attribute extends quick_edit_ui_element {
     function __construct($name, $value, $is_disabled = false) {
         $this->is_disabled = $is_disabled;
         parent::__construct($name, $value);
+    }
+
+    function is_textbox() {
+        return true;
     }
 
     function html() {
@@ -90,11 +106,21 @@ class quick_edit_checkbox_attribute extends quick_edit_ui_element {
         parent::__construct($name, 1);
     }
 
+    function is_checkbox() {
+        return true;
+    }
+
     function html() {
         $attributes = array(
             'type' => 'checkbox',
             'name' => $this->name,
             'value' => 1
+        );
+
+        $alt = array(
+            'type' => 'hidden',
+            'name' => $this->name,
+            'value' => 0
         );
 
         $hidden = array(
@@ -108,6 +134,7 @@ class quick_edit_checkbox_attribute extends quick_edit_ui_element {
         }
 
         return (
+            html_writer::empty_tag('input', $alt) .
             html_writer::empty_tag('input', $attributes) .
             html_writer::empty_tag('input', $hidden)
         );
@@ -132,6 +159,8 @@ abstract class quick_edit_grade_attribute_format extends quick_edit_attribute_fo
     function get_name() {
         return "{$this->name}_{$this->grade->itemid}_{$this->grade->userid}";
     }
+
+    public abstract function set($value);
 }
 
 interface unique_name {
@@ -174,6 +203,49 @@ class quick_edit_finalgrade_ui extends quick_edit_grade_attribute_format impleme
             $this->is_disabled()
         );
     }
+
+    function set($value) {
+        global $DB;
+
+        $userid = $this->grade->userid;
+        $grade_item = $this->grade->grade_item;
+
+        $feedback = false;
+        $feedbackformat = false;
+        if ($grade_item->gradetype == GRADE_TYPE_SCALE) {
+            if ($value == -1) {
+                $finalgrade = null;
+            } else {
+                $finalgrade = $value;
+            }
+        } else {
+            $finalgrade = unformat_float($value);
+        }
+
+        $errorstr = '';
+        if (is_null($finalgrade)) {
+            // ok
+        } else {
+            $bounded = $grade_item->bounded_grade($finalgrade);
+            if ($bounded > $finalgrade) {
+                $errorstr = 'lessthanmin';
+            } else if ($bounded < $finalgrade) {
+                $errorstr = 'morethanmax';
+            }
+        }
+
+        if ($errorstr) {
+            $user = $DB->get_record('user', array('id' => $userid), 'id, firstname, lastname');
+            $gradestr = new stdClass;
+            $gradestr->username = fullname($user);
+            $gradestr->itemname = $this->grade->grade_item->get_name();
+
+            $errorstr = get_string($errorstr, 'grades', $gradestr);
+        }
+
+        $grade_item->update_final_grade($userid, $finalgrade, 'quick_edit', $feedback, FORMAT_MOODLE);
+        return $errorstr;
+    }
 }
 
 class quick_edit_feedback_ui extends quick_edit_grade_attribute_format implements unique_value, be_disabled {
@@ -200,6 +272,22 @@ class quick_edit_feedback_ui extends quick_edit_grade_attribute_format implement
             $this->is_disabled()
         );
     }
+
+    function set($value) {
+        $finalgrade = false;
+        $trimmed = trim($value);
+        if (empty($trimmed)) {
+            $feedback = NULL;
+        } else {
+            $feedback = $value;
+        }
+
+        $this->grade->grade_item->update_final_grade(
+            $this->grade->userid, $finalgrade, 'quick_edit',
+            $feedback, FORMAT_MOODLE
+        );
+        return false;
+    }
 }
 
 class quick_edit_override_ui extends quick_edit_grade_attribute_format implements be_checked {
@@ -219,6 +307,18 @@ class quick_edit_override_ui extends quick_edit_grade_attribute_format implement
             $this->is_checked()
         );
     }
+
+    function set($value) {
+        if (empty($this->grade->id)) {
+            return false;
+        }
+
+        $state = $value == 0 ? false : true;
+
+        $this->grade->set_overridden($state);
+        $this->grade->grade_item->get_parent_category()->force_regrading();
+        return false;
+    }
 }
 
 class quick_edit_exclude_ui extends quick_edit_grade_attribute_format implements be_checked {
@@ -233,6 +333,28 @@ class quick_edit_exclude_ui extends quick_edit_grade_attribute_format implements
             $this->get_name(),
             $this->is_checked()
         );
+    }
+
+    function set($value) {
+        if (empty($this->grade->id)) {
+            if (empty($value)) {
+                return false;
+            }
+
+            // Fill in arbitrary grade to be excluded
+            $this->grade->grade_item->update_final_grade(
+                $this->grade->userid, 0, 'quick_edit', null, FORMAT_MOODLE
+            );
+
+            $this->grade = grade_grade::fetch($grade_params);
+        }
+
+        $state = $value == 0 ? false : true;
+
+        $this->grade->set_excluded($state);
+
+        $this->grade->grade_item->get_parent_category()->force_regrading();
+        return false;
     }
 }
 

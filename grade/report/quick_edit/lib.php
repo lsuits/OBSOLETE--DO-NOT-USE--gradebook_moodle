@@ -63,7 +63,7 @@ class grade_report_quick_edit extends grade_report {
     }
 
     function process_data($data) {
-        return $this->screen->processor()->handle($data);
+        return $this->screen->process($data);
     }
 
     function process_action($target, $action) {

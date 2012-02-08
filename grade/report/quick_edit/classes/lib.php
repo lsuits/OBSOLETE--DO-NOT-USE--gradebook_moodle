@@ -1,7 +1,6 @@
 <?php
 
 require_once $CFG->dirroot . '/grade/report/quick_edit/classes/uilib.php';
-require_once $CFG->dirroot . '/grade/report/quick_edit/classes/datalib.php';
 
 interface selectable_items {
     public function description();
@@ -45,15 +44,15 @@ abstract class quick_edit_screen {
         }
     }
 
-    public function fetch_grade_or_default($item, $user) {
+    public function fetch_grade_or_default($item, $userid) {
         $grade = grade_grade::fetch(array(
-            'itemid' => $item->id, 'userid' => $user->id
+            'itemid' => $item->id, 'userid' => $userid
         ));
 
         if (!$grade) {
             $default = new stdClass;
 
-            $default->userid = $user->id;
+            $default->userid = $userid;
             $default->itemid = $item->id;
             $default->feedback = '';
 
@@ -114,8 +113,70 @@ abstract class quick_edit_screen {
         return $this->__factory;
     }
 
-    public function processor() {
-        return new quick_edit_grade_processor($this->courseid);
+    public function process($data) {
+        $warnings = array();
+
+        foreach ($data as $varname => $throw) {
+            if (preg_match("/(\w+)_(\d+)_(\d+)/", $varname, $matches)) {
+                $itemid = $matches[2];
+                $userid = $matches[3];
+            } else {
+                continue;
+            }
+
+            $fields = $this->definition();
+
+            if (!in_array($matches[1], $fields)) {
+                continue;
+            }
+
+            $grade_item = grade_item::fetch(array(
+                'id' => $itemid, 'courseid' => $this->courseid
+            ));
+
+            if (!$grade_item) {
+                continue;
+            }
+
+            $grade = $this->fetch_grade_or_default($grade_item, $userid);
+
+            $element = $this->factory()->create($matches[1])->format($grade);
+
+            $name = $element->get_name();
+            $oldname = "old$name";
+
+            $posted = $data->$name;
+            $oldvalue = $data->$oldname;
+
+            // Probably not supported
+            if (empty($data->$name) and empty($data->$oldname)) {
+                continue;
+            }
+
+            $format = $element->determine_format();
+
+            if ($format->is_textbox() and trim($data->$name) === '') {
+                $data->$name = null;
+            }
+
+            // Same value; skip
+            if ($oldvalue == $posted) {
+                continue;
+            }
+
+            $msg = $element->set($posted);
+
+            // Optional type
+            if (!empty($msg)) {
+                $warnings[] = $msg;
+            }
+        }
+
+        return $warnings;
+    }
+
+    public function definition() {
+        return array();
     }
 }
 
@@ -125,6 +186,20 @@ abstract class quick_edit_tablelike extends quick_edit_screen {
     public abstract function headers();
 
     public abstract function format_line($item);
+
+    public function format_definition($line, $grade) {
+        foreach ($this->definition() as $field) {
+            $html = $this->factory()->create($field)->format($grade);
+
+            if ($field == 'finalgrade') {
+                $html .= $this->structure->get_grade_analysis_icon($grade);
+            }
+
+            $line[] = $html;
+        }
+
+        return $line;
+    }
 
     public function html() {
         $table = new html_table();
@@ -149,7 +224,9 @@ abstract class quick_edit_tablelike extends quick_edit_screen {
     }
 
     public function buttons() {
-        $save = html_writer::empty_tag('input', array('type' => 'submit'));
+        $save = html_writer::empty_tag('input', array(
+            'type' => 'submit', 'value' => get_string('update')
+        ));
 
         return array($save);
     }
