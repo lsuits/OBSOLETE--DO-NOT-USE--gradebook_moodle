@@ -24,6 +24,10 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
         );
     }
 
+    public function display_group_selector() {
+        return false;
+    }
+
     public function init($self_item_is_empty = false) {
         global $DB;
 

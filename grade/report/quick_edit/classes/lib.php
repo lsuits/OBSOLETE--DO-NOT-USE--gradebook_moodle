@@ -178,6 +178,10 @@ abstract class quick_edit_screen {
     public function definition() {
         return array();
     }
+
+    public function display_group_selector() {
+        return true;
+    }
 }
 
 abstract class quick_edit_tablelike extends quick_edit_screen {
