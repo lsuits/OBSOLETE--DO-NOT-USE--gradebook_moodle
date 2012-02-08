@@ -4,7 +4,7 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
 
     private $categories = array();
 
-    private $structure;
+    var $structure;
 
     public function description() {
         return get_string('gradeitems', 'grades');;
@@ -16,6 +16,12 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
 
     public function item_type() {
         return 'grade';
+    }
+
+    public function definition() {
+        return array(
+            'finalgrade', 'feedback', 'override', 'exclude'
+        );
     }
 
     public function init($self_item_is_empty = false) {
@@ -53,19 +59,16 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
     public function format_line($item) {
         global $OUTPUT;
 
-        $grade = $this->fetch_grade_or_default($item, $this->user);
+        $grade = $this->fetch_grade_or_default($item, $this->user->id);
 
-        return array(
+        $line = array(
             $this->format_icon($item),
             $this->format_link('grade', $item->id, $item->itemname),
             $this->category($item)->get_name(),
-            $this->factory()->create('range')->format($item),
-            $this->factory()->create('finalgrade')->format($grade) .
-            $this->structure->get_grade_analysis_icon($grade),
-            $this->factory()->create('feedback')->format($grade),
-            $this->factory()->create('override')->format($grade),
-            $this->factory()->create('exclude')->format($grade)
+            $this->factory()->create('range')->format($item)
         );
+
+        return $this->format_definition($line, $grade);
     }
 
     private function format_icon($item) {

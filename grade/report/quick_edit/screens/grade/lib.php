@@ -4,7 +4,7 @@ class quick_edit_grade extends quick_edit_tablelike implements selectable_items 
 
     private $requires_extra;
 
-    private $structure;
+    var $structure;
 
     public function description() {
         return get_string('users');
@@ -16,6 +16,16 @@ class quick_edit_grade extends quick_edit_tablelike implements selectable_items 
 
     public function item_type() {
         return 'user';
+    }
+
+    public function definition() {
+        $def = array('finalgrade', 'feedback');
+
+        if ($this->requires_extra) {
+            $def[] = 'override';
+        }
+
+        return $def;
     }
 
     public function init($self_item_is_empty = false) {
@@ -60,7 +70,7 @@ class quick_edit_grade extends quick_edit_tablelike implements selectable_items 
     public function format_line($item) {
         global $OUTPUT;
 
-        $grade = $this->fetch_grade_or_default($this->item, $item);
+        $grade = $this->fetch_grade_or_default($this->item, $item->id);
 
         $fullname = fullname($item);
 
@@ -69,21 +79,10 @@ class quick_edit_grade extends quick_edit_tablelike implements selectable_items 
         $line = array(
             $OUTPUT->user_picture($item),
             $this->format_link('user', $item->id, $fullname),
-            $this->item_range(),
-            $this->factory()->create('finalgrade')->format($grade) .
-            $this->structure->get_grade_analysis_icon($grade),
-            $this->factory()->create('feedback')->format($grade)
+            $this->item_range()
         );
 
-        return $this->additional_cells($line, $grade);
-    }
-
-    public function additional_cells($line, $grade) {
-        if ($this->requires_extra) {
-            $line[] = $this->factory()->create('override')->format($grade);
-        }
-
-        return $line;
+        return $this->format_definition($line, $grade);
     }
 
     public function additional_headers($headers) {
