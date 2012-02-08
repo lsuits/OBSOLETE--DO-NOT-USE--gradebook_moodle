@@ -102,3 +102,35 @@ class grade_report_quick_edit extends grade_report {
         return $OUTPUT->box($this->screen->html());
     }
 }
+
+function grade_report_quick_edit_profilereport($course, $user) {
+    global $CFG, $OUTPUT;
+
+    if (!function_exists('grade_report_user_profilereport')) {
+        require_once $CFG->dirroot . '/grade/report/user/lib.php';
+    }
+
+    $context = get_context_instance(CONTEXT_COURSE, $course->id);
+
+    $can_use = (
+        has_capability('gradereport/quick_edit:view', $context) and
+        has_capability('moodle/grade:viewall', $context) and
+        has_capability('moodle/grade:edit', $context)
+    );
+
+    if (!$can_use) {
+        grade_report_user_profilereport($course, $user);
+    } else {
+        $gpr = new grade_plugin_return(array(
+            'type' => 'report',
+            'plugin' => 'quick_edit',
+            'courseid' => $course->id,
+            'userid' => $user->id
+        ));
+
+        $report = new grade_report_quick_edit($course->id, $gpr, $context, 'user', $user->id);
+
+        echo $OUTPUT->heading($report->screen->heading());
+        echo $report->output();
+    }
+}
