@@ -28,9 +28,15 @@ require_once $CFG->dirroot.'/grade/lib.php';
 require_once $CFG->dirroot.'/grade/report/quick_edit/lib.php';
 
 $courseid = required_param('id', PARAM_INT);
-$itemtype = optional_param('item', 'select', PARAM_TEXT);
-$itemid = optional_param('itemid', null, PARAM_INT);
 $groupid  = optional_param('group', null, PARAM_INT);
+
+// Making this work with profile reports
+$userid = optional_param('userid', null, PARAM_INT);
+
+$default_type = $userid ? 'user' : 'select';
+
+$itemid = optional_param('itemid', $userid, PARAM_INT);
+$itemtype = optional_param('item', $default_type, PARAM_TEXT);
 
 $PAGE->set_url(new moodle_url('/grade/report/quick_edit/index.php', array(
     'id' => $courseid,
