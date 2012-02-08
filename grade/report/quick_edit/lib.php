@@ -82,6 +82,19 @@ class grade_report_quick_edit extends grade_report {
 
         // Load custom or predifined js
         $this->screen->js();
+
+        $base = '/grade/report/quick_edit/index.php';
+
+        $id_params = array('id' => $courseid);
+
+        $this->baseurl = new moodle_url($base, $id_params);
+
+        $this->pbarurl = new moodle_url($base, $id_params + array(
+            'item' => $itemtype,
+            'itemid' => $itemid
+        ));
+
+        $this->setup_groups();
     }
 
     function output() {
