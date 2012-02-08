@@ -23,7 +23,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 // General Strings
-$string['pluginname'] = 'Quick Edit';
+$string['pluginname'] = 'Quick Edit report';
 $string['quick_edit:view'] = 'View the '.$string['pluginname'].' report';
 
 $string['exclude'] = 'Exclude';
