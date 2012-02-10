@@ -38,14 +38,9 @@ $default_type = $userid ? 'user' : 'select';
 $itemid = optional_param('itemid', $userid, PARAM_INT);
 $itemtype = optional_param('item', $default_type, PARAM_TEXT);
 
-$PAGE->set_url(new moodle_url('/grade/report/quick_edit/index.php', array(
-    'id' => $courseid,
-    'item' => $itemtype,
-    'itemid' => $itemid,
-    'group' => $groupid
-)));
-
 $course_params = array('id' => $courseid);
+
+$PAGE->set_url(new moodle_url('/grade/report/quick_edit/index.php', $course_params));
 
 if (!$course = $DB->get_record('course', $course_params)) {
     print_error('nocourseid');
@@ -81,6 +76,11 @@ $pluginname = get_string('pluginname', 'gradereport_quick_edit');
 
 $report_url = new moodle_url('/grade/report/index.php', $course_params);
 $edit_url = new moodle_url('/grade/report/quick_edit/index.php', $course_params);
+
+$PAGE->navbar->ignore_active(true);
+
+$PAGE->navbar->add(get_string('courses'));
+$PAGE->navbar->add($course->shortname, new moodle_url('/course/view.php', $course_params));
 
 $PAGE->navbar->add(get_string('gradeadministration', 'grades'));
 $PAGE->navbar->add(get_string('pluginname', 'gradereport_grader'), $report_url);
