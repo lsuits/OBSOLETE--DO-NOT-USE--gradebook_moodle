@@ -32,3 +32,5 @@ $string['grader:manage'] = 'Manage the grader report';
 $string['grader:view'] = 'View the grader report';
 $string['pluginname'] = 'Grader report';
 $string['preferences'] = 'Grader report preferences';
+$string['quick_edit'] = 'Integrate Quick Edit';
+$string['quick_edit_desc'] = 'Creates _Quick edit_ links in the grader report.';
