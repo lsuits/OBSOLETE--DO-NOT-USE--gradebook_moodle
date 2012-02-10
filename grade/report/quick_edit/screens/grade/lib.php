@@ -102,6 +102,6 @@ class quick_edit_grade extends quick_edit_tablelike implements selectable_items 
     }
 
     public function heading() {
-        return $this->item->itemname;
+        return $this->item->get_name();
     }
 }
