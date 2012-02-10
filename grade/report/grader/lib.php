@@ -570,6 +570,9 @@ class grade_report_grader extends grade_report {
         if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
             $colspan++;
         }
+        if ($this->get_pref('integrate_quick_edit')) {
+            $colspan++;
+        }
         $colspan += count($extrafields);
 
         $levels = count($this->gtree->levels) - 1;
@@ -593,6 +596,9 @@ class grade_report_grader extends grade_report {
         $studentheader->id = 'studentheader';
         if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
             $studentheader->colspan = 2;
+        }
+        if ($this->get_pref('integrate_quick_edit')) {
+            $studentheader->colspan++;
         }
         $studentheader->text = $arrows['studentname'];
 
@@ -643,6 +649,23 @@ class grade_report_grader extends grade_report {
             }
 
             $userrow->cells[] = $usercell;
+
+            if ($this->get_pref('integrate_quick_edit')) {
+                $quickeditcell = new html_table_cell();
+                $quickeditcell->attributes['class'] = 'quickedituser';
+                $quickeditcell->header = true;
+                $a = new stdClass();
+                $a->user = fullname($user);
+                $strgradesforuser = get_string('gradesforuser', 'grades', $a);
+                $url = new moodle_url('/grade/report/quick_edit/index.php', array(
+                    'id' => $this->course->id,
+                    'item' => 'user',
+                    'itemid' => $user->id,
+                    'group' => $this->currentgroup
+                ));
+                $quickeditcell->text = html_writer::link($url, 'QE');
+                $userrow->cells[] = $quickeditcell;
+            }
 
             if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
                 $userreportcell = new html_table_cell();
@@ -775,6 +798,21 @@ class grade_report_grader extends grade_report {
                         $arrow = $this->get_sort_arrow('move', $sortlink);
                     }
 
+                    if ($this->get_pref('integrate_quick_edit')) {
+                        $url = new moodle_url('/grade/report/quick_edit/index.php', array(
+                            'id' => $this->course->id,
+                            'item' => 'grade',
+                            'itemid' => $element['object']->id,
+                            'group' => $this->currentgroup
+                        ));
+                        $link = html_writer::link($url, ' QE ');
+                        $qe_link = html_writer::tag('span', $link, array(
+                            'class' => 'quickeditgrade'
+                        ));
+                    } else {
+                        $qe_link = '';
+                    }
+
                     $headerlink = $this->gtree->get_element_header($element, true, $this->get_pref('showactivityicons'), false);
 
                     $itemcell = new html_table_cell();
@@ -785,7 +823,7 @@ class grade_report_grader extends grade_report {
                     }
 
                     $itemcell->colspan = $colspan;
-                    $itemcell->text = shorten_text($headerlink) . $arrow;
+                    $itemcell->text = $qe_link . shorten_text($headerlink) . $arrow;
                     $itemcell->header = true;
                     $itemcell->scope = 'col';
 

@@ -31,6 +31,12 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('grade_report_quickgrading', get_string('quickgrading', 'grades'),
                                                 get_string('quickgrading_help', 'grades'), 1));
 
+    $settings->add(new admin_setting_configcheckbox(
+        'grade_report_integrate_quick_edit',
+        get_string('quick_edit', 'gradereport_grader'),
+        get_string('quick_edit_desc', 'gradereport_grader'), 0
+    ));
+
     $settings->add(new admin_setting_configcheckbox('grade_report_showquickfeedback', get_string('quickfeedback', 'grades'),
                                                 get_string('showquickfeedback_help', 'grades'), 0));
 
