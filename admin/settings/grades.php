@@ -124,6 +124,10 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     /// Grade item settings
     $temp = new admin_settingpage('gradeitemsettings', new lang_string('gradeitemsettings', 'grades'), 'moodle/grade:manage');
     if ($ADMIN->fulltree) {
+        $temp->add(new admin_setting_configcheckbox('grade_multfactor_alt',
+            new lang_string('multfactor_alt', 'grades'),
+            new lang_string('multfactor_alt_desc', 'grades'), 0));
+
         $temp->add(new admin_setting_configselect('grade_displaytype', new lang_string('gradedisplaytype', 'grades'),
                                                   new lang_string('gradedisplaytype_help', 'grades'), GRADE_DISPLAY_TYPE_REAL, $display_types));
 
