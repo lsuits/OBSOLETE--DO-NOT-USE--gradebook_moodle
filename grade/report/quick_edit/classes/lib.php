@@ -184,16 +184,23 @@ abstract class quick_edit_screen {
     }
 }
 
-abstract class quick_edit_tablelike extends quick_edit_screen {
+abstract class quick_edit_tablelike extends quick_edit_screen implements tabbable {
     var $items;
 
     public abstract function headers();
 
     public abstract function format_line($item);
 
+    public function get_tabindex() {
+        return (count($this->definition()) * $this->total) + $this->index;
+    }
+
     public function format_definition($line, $grade) {
-        foreach ($this->definition() as $field) {
-            $html = $this->factory()->create($field)->format($grade);
+        foreach ($this->definition() as $i => $field) {
+            // Table tab index
+            $tab = ($i * $this->total) + $this->index;
+
+            $html = $this->factory()->create($field)->format($grade, $tab);
 
             if ($field == 'finalgrade') {
                 $html .= $this->structure->get_grade_analysis_icon($grade);
@@ -212,7 +219,12 @@ abstract class quick_edit_tablelike extends quick_edit_screen {
 
         $table->data = array();
 
+        // To be used for extra formatting
+        $this->index = 0;
+        $this->total = count($this->items);
+
         foreach ($this->items as $item) {
+            $this->index ++;
             $table->data[] = $this->format_line($item);
         }
 
@@ -229,7 +241,9 @@ abstract class quick_edit_tablelike extends quick_edit_screen {
 
     public function buttons() {
         $save = html_writer::empty_tag('input', array(
-            'type' => 'submit', 'value' => get_string('update')
+            'type' => 'submit',
+            'value' => get_string('update'),
+            'tabindex' => $this->get_tabindex()
         ));
 
         return array($save);
