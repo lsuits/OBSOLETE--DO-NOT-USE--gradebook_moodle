@@ -761,6 +761,8 @@ class grade_report_grader extends grade_report {
         );
         $jsscales = array();
 
+        $render_percents = $this->get_pref('showweightedpercents');
+
         foreach ($this->gtree->get_levels() as $key=>$row) {
             if ($key == 0) {
                 // do not display course grade category
@@ -840,14 +842,16 @@ class grade_report_grader extends grade_report {
                     $itemcell = new html_table_cell();
                     $itemcell->attributes['class'] = $type . ' ' . $catlevel . ' highlightable';
 
-                    $percents = $this->get_weighted_percents($element['object']);
+                    $percents = $render_percents ?
+                        $this->get_weighted_percents($element['object']) : '';
 
                     if ($element['object']->is_hidden()) {
                         $itemcell->attributes['class'] .= ' hidden';
                     }
 
                     $itemcell->colspan = $colspan;
-                    $itemcell->text = shorten_text($headerlink) . $percents . $arrow;
+                    $itemcell->text = shorten_text($headerlink);
+                    $itemcell->text .= $percents . $arrow;
                     $itemcell->header = true;
                     $itemcell->scope = 'col';
 
