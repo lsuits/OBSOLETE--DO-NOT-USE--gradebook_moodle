@@ -304,15 +304,14 @@ class quick_edit_finalgrade_ui extends quick_edit_grade_attribute_format impleme
     var $name = 'finalgrade';
 
     function get_value() {
+        // Manual item raw grade support
+        $val = $this->grade->grade_item->is_manual_item() ?
+            $this->grade->rawgrade : $this->grade->finalgrade;
+
         if ($this->grade->grade_item->scaleid) {
-            return $this->grade->finalgrade ? (int)$this->grade->finalgrade: -1;
+            return $val ? (int)$val : -1;
         } else {
-            return $this->grade->finalgrade ?
-                format_float(
-                    $this->grade->finalgrade,
-                    $this->grade->grade_item->get_decimals()
-                ) :
-                '';
+            return $val ? format_float($val, $this->grade->grade_item->get_decimals()) : '';
         }
     }
 
