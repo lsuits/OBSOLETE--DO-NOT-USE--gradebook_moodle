@@ -233,6 +233,10 @@ class edit_item_form extends moodleform {
             if (!$grade_item->is_raw_used()) {
                 $mform->removeElement('plusfactor');
                 $mform->removeElement('multfactor');
+
+                if ($mform->elementExists('curve_to')) {
+                    $mform->removeElement('curve_to');
+                }
             }
 
             if ($grade_item->is_outcome_item()) {
