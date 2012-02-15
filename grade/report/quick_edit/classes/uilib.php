@@ -19,8 +19,11 @@ class quick_edit_factory_class_wrap {
         $this->class = $class;
     }
 
-    function format($what) {
-        return new $this->class($what);
+    function format() {
+        $args = func_get_args();
+
+        $reflect = new ReflectionClass($this->class);
+        return $reflect->newInstanceArgs($args);
     }
 }
 
@@ -64,9 +67,11 @@ class quick_edit_empty_element extends quick_edit_ui_element {
 
 class quick_edit_text_attribute extends quick_edit_ui_element {
     var $is_disabled;
+    var $tabindex;
 
-    function __construct($name, $value, $is_disabled = false) {
+    function __construct($name, $value, $is_disabled = false, $tabindex = null) {
         $this->is_disabled = $is_disabled;
+        $this->tabindex = $tabindex;
         parent::__construct($name, $value);
     }
 
@@ -80,6 +85,10 @@ class quick_edit_text_attribute extends quick_edit_ui_element {
             'name' => $this->name,
             'value' => $this->value
         );
+
+        if (!empty($this->tabindex)) {
+            $attributes['tabindex'] = $this->tabindex;
+        }
 
         if ($this->is_disabled) {
             $attributes['disabled'] = 'DISABLED';
@@ -100,9 +109,11 @@ class quick_edit_text_attribute extends quick_edit_ui_element {
 
 class quick_edit_checkbox_attribute extends quick_edit_ui_element {
     var $is_checked;
+    var $tabindex;
 
-    function __construct($name, $is_checked = false) {
+    function __construct($name, $is_checked = false, $tabindex = null) {
         $this->is_checked = $is_checked;
+        $this->tabindex = $tabindex;
         parent::__construct($name, 1);
     }
 
@@ -128,6 +139,10 @@ class quick_edit_checkbox_attribute extends quick_edit_ui_element {
             'name' => 'old' . $this->name
         );
 
+        if (!empty($this->tabindex)) {
+            $attributes['tabindex'] = $this->tabindex;
+        }
+
         if ($this->is_checked) {
             $attributes['checked'] = 'CHECKED';
             $hidden['value'] = 1;
@@ -149,15 +164,28 @@ abstract class quick_edit_attribute_format {
     }
 }
 
-abstract class quick_edit_grade_attribute_format extends quick_edit_attribute_format implements unique_name {
+abstract class quick_edit_grade_attribute_format extends quick_edit_attribute_format implements unique_name, tabbable {
     var $name;
 
-    function __construct($grade) {
-        $this->grade = $grade;
+    function __construct() {
+        $args = func_get_args();
+
+        $this->get_arg_or_nothing($args, 0, 'grade');
+        $this->get_arg_or_nothing($args, 1, 'tabindex');
     }
 
     function get_name() {
         return "{$this->name}_{$this->grade->itemid}_{$this->grade->userid}";
+    }
+
+    function get_tabindex() {
+        return isset($this->tabindex) ? $this->tabindex : null;
+    }
+
+    private function get_arg_or_nothing($args, $index, $field) {
+        if (isset($args[$index])) {
+            $this->$field = $args[$index];
+        }
     }
 
     public abstract function set($value);
@@ -177,6 +205,10 @@ interface be_disabled {
 
 interface be_checked {
     function is_checked();
+}
+
+interface tabbable {
+    function get_tabindex();
 }
 
 class quick_edit_finalgrade_ui extends quick_edit_grade_attribute_format implements unique_value, be_disabled {
@@ -200,7 +232,8 @@ class quick_edit_finalgrade_ui extends quick_edit_grade_attribute_format impleme
         return new quick_edit_text_attribute(
             $this->get_name(),
             $this->get_value(),
-            $this->is_disabled()
+            $this->is_disabled(),
+            $this->get_tabindex()
         );
     }
 
@@ -269,7 +302,8 @@ class quick_edit_feedback_ui extends quick_edit_grade_attribute_format implement
         return new quick_edit_text_attribute(
             $this->get_name(),
             $this->get_value(),
-            $this->is_disabled()
+            $this->is_disabled(),
+            $this->get_tabindex()
         );
     }
 
