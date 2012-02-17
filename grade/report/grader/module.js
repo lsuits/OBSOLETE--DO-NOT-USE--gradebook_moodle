@@ -135,7 +135,7 @@ M.gradereport_grader.classes.report = function(Y, id, cfg, items, users, feedbac
             // Highlight rows
             tr.all('th.cell').on('click', this.table_highlight_row, this, tr);
             // Popout image
-            tr.all('th.cell div.userpic img.userpicture').each(function(img) {
+            tr.all('th.cell img.userpicture').each(function(img) {
                 if (img.get('className') === "userpicture") {
                     M.gradereport_grader.tooltip.attach(img, this);
                 }
