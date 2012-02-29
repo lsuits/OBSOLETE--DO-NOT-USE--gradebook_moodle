@@ -679,6 +679,15 @@ class grade_item extends grade_object {
                     continue;
                 }
 
+                // Manual item rawgrade might be recomputed
+                if ($this->is_manual_item() and $CFG->grade_item_manual_recompute) {
+                    $maxscale = ($this->grademax / $grade->rawgrademax);
+                    $grade->rawgrademax = $this->grademax;
+                    $grade->rawgrademin = $this->grademin;
+                    $recompute = $grade->rawgrade * $maxscale;
+                    $grade->rawgrade = $this->bounded_grade($recompute);
+                }
+
                 $grade->finalgrade = $this->adjust_raw_grade($grade->rawgrade, $grade->rawgrademin, $grade->rawgrademax);
 
                 if (grade_floats_different($grade_record->finalgrade, $grade->finalgrade)) {
