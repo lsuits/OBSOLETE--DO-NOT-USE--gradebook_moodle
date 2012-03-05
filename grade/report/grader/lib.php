@@ -1779,12 +1779,14 @@ class grade_report_grader extends grade_report {
         }
 
         $determine_weight = function($item) use ($parent) {
-            $discard_weight = (
-                $parent->is_extracredit_used() and
-                $parent->is_item_extra_credit($item)
-            );
+            if ($parent->is_extracredit_used()) {
+                $discard_weight = (
+                    ($parent->aggregation != GRADE_AGGREGATE_WEIGHTED_MEAN &&
+                    $item->aggregationcoef > 0) or $item->aggregationcoef > 0
+                );
 
-            if ($discard_weight) return 0;
+                if ($discard_weight) return 0;
+            }
 
             switch ($parent->aggregation) {
                 case GRADE_AGGREGATE_WEIGHTED_MEAN:
