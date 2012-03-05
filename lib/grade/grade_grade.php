@@ -239,8 +239,12 @@ class grade_grade extends grade_object {
 
         $grade_item = $this->load_grade_item();
 
-        if ($grade_item->gradetype == GRADE_TYPE_NONE or !$grade_item->is_overridable_item()) {
+        if ($grade_item->gradetype == GRADE_TYPE_NONE) {
             return false;
+        }
+
+        if ($grade_item->is_course_item() or $grade_item->is_category_item()) {
+            return (bool)get_config('moodle', 'grade_overridecat');
         }
 
         return true;

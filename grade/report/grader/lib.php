@@ -147,6 +147,8 @@ class grade_report_grader extends grade_report {
         $this->setup_groups();
 
         $this->setup_sortitemid();
+
+        $this->overridecat = (bool)get_config('moodle', 'grade_overridecat');
     }
 
     /**
@@ -1514,15 +1516,17 @@ class grade_report_grader extends grade_report {
         // Init all icons
         $editicon = '';
 
+        $editable = true;
+
         if ($element['type'] == 'grade') {
             $item = $element['object']->grade_item;
 
-            $overridable = $item->is_overridable_item();
-        } else {
-            $overridable = true;
+            if ($item->is_course_item() or $item->is_category_item()) {
+                $editable = $this->overridecat;
+            }
         }
 
-        if ($element['type'] != 'categoryitem' && $element['type'] != 'courseitem' &&$overridable) {
+        if ($element['type'] != 'categoryitem' && $element['type'] != 'courseitem' &&$editable) {
             $editicon = $this->gtree->get_edit_icon($element, $this->gpr);
         }
 
