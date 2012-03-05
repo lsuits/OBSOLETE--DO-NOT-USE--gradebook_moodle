@@ -20,11 +20,14 @@ abstract class quick_edit_screen {
     var $context;
 
     function __construct($courseid, $itemid, $groupid = null) {
+        global $DB;
+
         $this->courseid = $courseid;
         $this->itemid = $itemid;
         $this->groupid = $groupid;
 
         $this->context = get_context_instance(CONTEXT_COURSE, $this->courseid);
+        $this->course = $DB->get_record('course', array('id' => $courseid));
 
         $this->init(empty($itemid));
     }
