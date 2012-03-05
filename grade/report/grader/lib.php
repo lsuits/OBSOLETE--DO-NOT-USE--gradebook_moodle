@@ -1774,6 +1774,10 @@ class grade_report_grader extends grade_report {
             return '';
         }
 
+        if ($item->is_category_item()) {
+            $parent = $parent->get_parent_category();
+        }
+
         $determine_weight = function($item) use ($parent) {
             switch ($parent->aggregation) {
                 case GRADE_AGGREGATE_WEIGHTED_MEAN:
