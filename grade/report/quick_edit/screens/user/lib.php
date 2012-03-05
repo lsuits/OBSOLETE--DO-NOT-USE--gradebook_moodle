@@ -37,9 +37,18 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
 
         $params = array('courseid' => $this->courseid);
 
-        $filter_items = grade_report_quick_edit::only_items();
+        $items = grade_item::fetch_all($params);
 
-        $this->items= array_filter(grade_item::fetch_all($params), $filter_items);
+        $allow_cats = (bool) get_config('moodle', 'grade_overridecat');
+
+        if ($allow_cats) {
+            $this->items = $items;
+        } else {
+            $filter_items = grade_report_quick_edit::only_items();
+
+            $this->items = array_filter($items, $filter_items);
+        }
+        unset($items);
 
         $this->structure = new grade_structure();
         $this->structure->modinfo = get_fast_modinfo(
@@ -67,8 +76,8 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
 
         $line = array(
             $this->format_icon($item),
-            $this->format_link('grade', $item->id, $item->itemname),
-            $this->category($item)->get_name(),
+            $this->format_link('grade', $item->id, $item->get_name()),
+            $this->category($item),
             $this->factory()->create('range')->format($item)
         );
 
@@ -82,13 +91,27 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
     }
 
     private function category($item) {
+        if (empty($item->categoryid)) {
+
+            if ($item->itemtype == 'course') {
+                return $this->course->fullname;
+            }
+
+            global $DB;
+
+            $params = array('id' => $item->iteminstance);
+            $elem = $DB->get_record('grade_categories', $params);
+
+            return $elem->fullname;
+        }
+
         if (!isset($this->categories[$item->categoryid])) {
             $category = $item->get_parent_category();
 
             $this->categories[$category->id] = $category;
         }
 
-        return $this->categories[$item->categoryid];
+        return $this->categories[$item->categoryid]->get_name();
     }
 
     public function heading() {

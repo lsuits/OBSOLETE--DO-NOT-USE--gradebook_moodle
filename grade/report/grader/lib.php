@@ -724,6 +724,8 @@ class grade_report_grader extends grade_report {
         );
         $jsscales = array();
 
+        $overridecat = get_config('moodle', 'grade_overridecat');
+
         foreach ($this->gtree->get_levels() as $key=>$row) {
             if ($key == 0) {
                 // do not display course grade category
@@ -798,7 +800,19 @@ class grade_report_grader extends grade_report {
                         $arrow = $this->get_sort_arrow('move', $sortlink);
                     }
 
-                    if ($this->get_pref('integrate_quick_edit')) {
+                    $is_category_item = (
+                        $element['object']->itemtype == 'course' or
+                        $element['object']->itemtype == 'category'
+                    );
+
+                    $can_category_quick_edit = ($is_category_item and $overridecat);
+
+                    $can_quick_edit = (
+                        $this->get_pref('integrate_quick_edit') and
+                        (!$is_category_item or $can_category_quick_edit)
+                    );
+
+                    if ($can_quick_edit) {
                         $url = new moodle_url('/grade/report/quick_edit/index.php', array(
                             'id' => $this->course->id,
                             'item' => 'grade',
