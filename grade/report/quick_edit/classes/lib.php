@@ -193,6 +193,32 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
         return (count($this->definition()) * $this->total) + $this->index;
     }
 
+    // Special injection for bulk operations
+    public function process($data) {
+        $bulk = $this->factory()->create('bulk_insert')->format($this->item);
+
+        // Bulk insert messages the data to be passed in
+        // ie: for all grades of empty grades apply the specified value
+        if ($bulk->is_applied($data)) {
+            $filter = $bulk->get_type($data);
+            $insert_value = $bulk->get_insert_value($data);
+
+            foreach ($data as $varname => $value) {
+                if (!preg_match('/^finalgrade_/', $varname)) {
+                    continue;
+                }
+
+                $empties = ($filter == 'blanks' and trim($value) === '');
+
+                if ($filter == 'all' or $empties) {
+                    $data->$varname = $insert_value;
+                }
+            }
+        }
+
+        parent::process($data);
+    }
+
     public function format_definition($line, $grade) {
         foreach ($this->definition() as $i => $field) {
             // Table tab index
@@ -232,8 +258,16 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
         $buttons = html_writer::tag('div', $button_html, $button_attr);
 
         return html_writer::tag('form',
-            html_writer::table($table) . $buttons,
+            html_writer::table($table) . $this->bulk_insert() . $buttons,
             array('method' => 'POST')
+        );
+    }
+
+    public function bulk_insert() {
+        return html_writer::tag(
+            'div',
+            $this->factory()->create('bulk_insert')->format($this->item)->html(),
+            array('quick_edit_bulk')
         );
     }
 

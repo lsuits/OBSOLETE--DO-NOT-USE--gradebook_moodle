@@ -32,7 +32,7 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
         global $DB;
 
         if (!$self_item_is_empty) {
-            $this->user = $DB->get_record('user', array('id' => $this->itemid));
+            $this->item= $DB->get_record('user', array('id' => $this->itemid));
         }
 
         $params = array('courseid' => $this->courseid);
@@ -72,7 +72,7 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
     public function format_line($item) {
         global $OUTPUT;
 
-        $grade = $this->fetch_grade_or_default($item, $this->user->id);
+        $grade = $this->fetch_grade_or_default($item, $this->item->id);
 
         $line = array(
             $this->format_icon($item),
@@ -115,6 +115,6 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
     }
 
     public function heading() {
-        return fullname($this->user);
+        return fullname($this->item);
     }
 }

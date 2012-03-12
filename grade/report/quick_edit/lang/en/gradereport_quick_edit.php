@@ -31,5 +31,10 @@ $string['override'] = 'Override';
 $string['assessmentname'] = 'Assessment Name';
 $string['notavailable'] = 'NA';
 
+$string['bulk'] = 'Insert';
+$string['blanks'] = 'Empty grades';
+$string['for'] = 'for';
+$string['all_grades'] = 'All grades';
+
 // Error Strings
 $string['notvalid'] = 'Not a valid Quick Edit screen: {$a}';
