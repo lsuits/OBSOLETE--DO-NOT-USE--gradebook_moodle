@@ -204,14 +204,22 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
             $insert_value = $bulk->get_insert_value($data);
 
             foreach ($data as $varname => $value) {
-                if (!preg_match('/^finalgrade_/', $varname)) {
+                if (!preg_match('/^finalgrade_(\d+)_/', $varname, $matches)) {
                     continue;
                 }
 
-                $empties = ($filter == 'blanks' and trim($value) === '');
+                $grade_item = grade_item::fetch(array(
+                    'courseid' => $this->courseid,
+                    'id' => $matches[1]
+                ));
+
+                $is_scale = ($grade_item->gradetype == GRADE_TYPE_SCALE);
+
+                $empties = (trim($value) === '' or ($is_scale and $value == -1));
 
                 if ($filter == 'all' or $empties) {
-                    $data->$varname = $insert_value;
+                    $data->$varname = ($is_scale and empty($insert_value)) ?
+                        -1 : $insert_value;
                 }
             }
         }
