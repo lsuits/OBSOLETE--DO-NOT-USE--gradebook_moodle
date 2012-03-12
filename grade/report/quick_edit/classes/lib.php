@@ -151,11 +151,6 @@ abstract class quick_edit_screen {
             $posted = $data->$name;
             $oldvalue = $data->$oldname;
 
-            // Probably not supported
-            if (empty($data->$name) and empty($data->$oldname)) {
-                continue;
-            }
-
             $format = $element->determine_format();
 
             if ($format->is_textbox() and trim($data->$name) === '') {
