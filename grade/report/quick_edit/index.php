@@ -64,6 +64,12 @@ $gpr = new grade_plugin_return(array(
     'type' => 'report', 'plugin' => 'quick_edit', 'courseid' => $courseid
 ));
 
+/// last selected report session tracking
+if (!isset($USER->grade_last_report)) {
+    $USER->grade_last_report = array();
+}
+$USER->grade_last_report[$course->id] = 'quick_edit';
+
 grade_regrade_final_grades($courseid);
 
 $report = new grade_report_quick_edit(
@@ -74,7 +80,7 @@ $reportname = $report->screen->heading();
 
 $pluginname = get_string('pluginname', 'gradereport_quick_edit');
 
-$report_url = new moodle_url('/grade/report/index.php', $course_params);
+$report_url = new moodle_url('/grade/report/grader/index.php', $course_params);
 $edit_url = new moodle_url('/grade/report/quick_edit/index.php', $course_params);
 
 $PAGE->navbar->ignore_active(true);
@@ -92,21 +98,23 @@ if ($reportname != $pluginname) {
     $PAGE->navbar->add($pluginname);
 }
 
+if ($data = data_submitted()) {
+    $warnings = $report->process_data($data);
+
+    if (empty($warnings)) {
+        redirect($report_url);
+    }
+}
+
 print_grade_page_head($course->id, 'report', 'quick_edit', $reportname);
 
 if ($report->screen->display_group_selector()) {
     echo $report->group_selector;
 }
 
-if ($data = data_submitted()) {
-    $warnings = $report->process_data($data);
-
-    if (empty($warnings)) {
-        echo $OUTPUT->notification(get_string('changessaved'), 'notifysuccess');
-    } else {
-        foreach ($warnings as $warning) {
-            echo $OUTPUT->notification($warning);
-        }
+if (!empty($warnings)) {
+    foreach ($warnings as $warning) {
+        echo $OUTPUT->notification($warning);
     }
 }
 
