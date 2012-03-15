@@ -32,12 +32,15 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
         global $DB;
 
         if (!$self_item_is_empty) {
-            $this->item= $DB->get_record('user', array('id' => $this->itemid));
+            $this->item = $DB->get_record('user', array('id' => $this->itemid));
         }
 
         $params = array('courseid' => $this->courseid);
 
         $items = grade_item::fetch_all($params);
+        uasort($items, function($itema, $itemb) {
+            return $itema->sortorder > $itemb->sortorder;
+        });
 
         $allow_cats = (bool) get_config('moodle', 'grade_overridecat');
 
