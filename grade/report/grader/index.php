@@ -139,6 +139,8 @@ $numusers = $report->get_numusers();
 $report->load_final_grades();
 
 echo $report->group_selector;
+echo $report->get_first_initial_bar();
+echo $report->get_last_initial_bar();
 echo '<div class="clearer"></div>';
 // echo $report->get_toggles_html();
 

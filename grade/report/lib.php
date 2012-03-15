@@ -290,6 +290,8 @@ abstract class grade_report {
             $params        = array_merge($params, $this->groupwheresql_params);
         }
 
+        $wherenames = $this->name_filters();
+
         $countsql = "SELECT COUNT(DISTINCT u.id)
                        FROM {user} u
                        JOIN ($enrolledsql) je
@@ -299,9 +301,32 @@ abstract class grade_report {
                        $groupsql
                       WHERE ra.roleid $gradebookrolessql
                             AND u.deleted = 0
+                            $wherenames
                             $groupwheresql
                             AND ra.contextid ".get_related_contexts_string($this->context);
         return $DB->count_records_sql($countsql, $params);
+    }
+
+    protected function setup_name_filters() {
+        $this->silast = optional_param('silast', 'all', PARAM_TEXT);
+        $this->filast = optional_param('filast', 'all', PARAM_TEXT);
+    }
+
+    protected function name_filters() {
+        $wherenames = '';
+        if (empty($this->silast) and empty($this->filast)) {
+            return $wherenames;
+        }
+
+        if ($this->filast != 'all') {
+            $wherenames .= " AND u.firstname LIKE '{$this->filast}%' ";
+        }
+
+        if ($this->silast != 'all') {
+            $wherenames .= " AND u.lastname LIKE '{$this->silast}%' ";
+        }
+
+        return $wherenames;
     }
 
     /**
@@ -413,5 +438,48 @@ abstract class grade_report {
 
         return $finalgrade;
     }
+
+    public function get_last_initial_bar() {
+        return $this->get_initial_bars('silast', $this->silast, get_string('lastname'));
+    }
+
+    public function get_first_initial_bar() {
+        return $this->get_initial_bars('filast', $this->filast, get_string('firstname'));
+    }
+
+    private function get_initial_bars($name, $current, $label) {
+        $field = $name . '_initials';
+        if (!empty($this->{$field})) {
+            return $this->$field;
+        }
+
+        $other = $name == 'silast' ?
+            array('filast' => $this->filast) :
+            array('silast' => $this->silast);
+
+        $bar = html_writer::start_tag('div', array('class' => 'initialbar lastinitial'));
+        $bar .= "$label: ";
+
+        $letters = array('all' => get_string('all'));
+        $alpha = explode(',', get_string('alphabet', 'langconfig'));
+
+        $letters += array_combine($alpha, $alpha);
+
+        $base_url = new moodle_url('index.php', array('id' => $this->courseid) + $other);
+
+        foreach ($letters as $key => $letter) {
+            if ($key == $current) {
+                $bar .= html_writer::tag('strong', $letter);
+            } else {
+                $url = new moodle_url($base_url, array($name => $key));
+                $bar .= html_writer::link($url, $letter);
+            }
+        }
+
+        $bar .= html_writer::end_tag('div');
+        $this->$field = $bar;
+        return $this->$field;
+    }
+
 }
 
