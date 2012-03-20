@@ -684,8 +684,9 @@ class grade_item extends grade_object {
                     $maxscale = ($this->grademax / $grade->rawgrademax);
                     $grade->rawgrademax = $this->grademax;
                     $grade->rawgrademin = $this->grademin;
-                    $recompute = $grade->rawgrade * $maxscale;
-                    $grade->rawgrade = $this->bounded_grade($recompute);
+                    // $recompute = $grade->rawgrade * $maxscale;
+                    // Apply bounds just in case
+                    $grade->rawgrade = $this->bounded_grade($grade->rawgrade);
                 }
 
                 $grade->finalgrade = $this->adjust_raw_grade($grade->rawgrade, $grade->rawgrademin, $grade->rawgrademax);
