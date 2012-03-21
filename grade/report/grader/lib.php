@@ -681,7 +681,7 @@ class grade_report_grader extends grade_report {
         $suspendedstring = null;
         foreach ($this->users as $userid => $user) {
             if ($this->rowcount > 0 and $this->rowcount % $repeat == 0) {
-                $rows = array_merge($rows, $repeatentries);
+                $rows = array_merge($rows, unserialize(serialize($repeatentries)));
             }
 
             $this->rowcount++;
