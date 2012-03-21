@@ -55,7 +55,8 @@ class grade_edit_tree {
     public function __construct($gtree, $moving=false, $gpr) {
         global $USER, $OUTPUT, $COURSE;
 
-        $this->show_calculations = (bool)get_config('moodle', 'grade_report_showcalculations');
+        $system_default = get_config('moodle', 'grade_report_showcalculations');
+        $this->show_calculations = get_user_preferences('grade_report_showcalculations', $system_default);
 
         $this->gtree = $gtree;
         $this->moving = $moving;
