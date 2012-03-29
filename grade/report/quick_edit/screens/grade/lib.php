@@ -47,6 +47,18 @@ class quick_edit_grade extends quick_edit_tablelike implements selectable_items 
 
         $this->item = grade_item::fetch($params);
 
+
+        $not_allowed = (
+            !get_config('moodle', 'grade_overridecat') and (
+                $this->item->is_course_item() or
+                $this->item->is_category_item()
+            )
+        );
+
+        if ($not_allowed) {
+            print_error('not_allowed', 'gradereport_quick_edit');
+        }
+
         $this->requires_extra = !$this->item->is_manual_item();
 
         $this->structure = new grade_structure();

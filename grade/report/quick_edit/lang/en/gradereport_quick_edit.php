@@ -26,6 +26,8 @@
 $string['pluginname'] = 'Quick edit';
 $string['quick_edit:view'] = 'View the '.$string['pluginname'].' report';
 
+$string['not_allowed'] = 'Not allowed to edit category or course item';
+
 $string['exclude'] = 'Exclude';
 $string['override'] = 'Override';
 $string['assessmentname'] = 'Assessment Name';
