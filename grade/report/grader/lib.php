@@ -1778,6 +1778,10 @@ class grade_report_grader extends grade_report {
             $parent = $parent->get_parent_category();
         }
 
+        if (!$parent) {
+            return '';
+        }
+
         $determine_weight = function($item) use ($parent) {
             if ($parent->is_extracredit_used()) {
                 $discard_weight = (
