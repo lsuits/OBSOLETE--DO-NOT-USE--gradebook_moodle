@@ -23,6 +23,50 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     $temp = new admin_settingpage('gradessettings', get_string('generalsettings', 'grades'), 'moodle/grade:manage');
     if ($ADMIN->fulltree) {
 
+        $temp->add(new admin_setting_heading('grade_anonymous_header',
+            get_string('anonymousgrading', 'grades'), ''));
+
+        $temp->add(new admin_setting_configcheckbox('grade_anonymous_grading',
+            get_string('anonymousgrading', 'grades'),
+            get_string('anonymousgrading_help', 'grades'), 0));
+
+        $course_cats = $DB->get_records_menu(
+            'course_categories', null, 'name ASC', 'id, name'
+        );
+
+        $temp->add(new admin_setting_configmultiselect('grade_anonymous_cats',
+            get_string('anonymouscategories', 'grades'),
+            get_string('anonymouscategories_help', 'grades'),
+            array(), $course_cats));
+
+        $fields = $DB->get_records_menu(
+            'user_info_field', null, 'name ASC', 'id, name'
+        );
+
+        $url = new moodle_url('/user/profile/index.php', array(
+            'id' => 0,
+            'action' => 'editfield',
+            'datatype' => 'text'
+        ));
+
+        if (!empty($fields)) {
+            $temp->add(new admin_setting_configselect('grade_anonymous_field',
+                get_string('anonymousfield', 'grades'),
+                get_string('anonymousfield_help', 'grades', $url->out()),
+                current(array_keys($fields)), $fields));
+        } else {
+            $temp->add(new admin_setting_heading('grade_anonymous_field',
+                get_string('anonymousfield', 'grades'),
+                get_string('anonymousfield_help', 'grades', $url->out())));
+        }
+
+        $temp->add(new admin_setting_configtext('grade_anonymous_adjusts',
+            get_string('anonymousadjusts', 'grades'),
+            get_string('anonymousadjusts_help', 'grades'), '0.0'));
+
+        $temp->add(new admin_setting_heading('grade_general_settings',
+            get_string('generalsettings', 'grades'), ''));
+
         // new CFG variable for gradebook (what roles to display)
         $temp->add(new admin_setting_special_gradebookroles());
 
