@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="grade/report/grader/db" VERSION="20120404" COMMENT="XMLDB file for Moodle anonymous grading"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="grade_anonymous_items" COMMENT="Anonymous grade items" NEXT="grade_anonymous_grades">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="true" NEXT="itemid"/>
+        <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The Moodle grade_item id reference" PREVIOUS="id" NEXT="complete"/>
+        <FIELD NAME="complete" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Boolean flag to quickly determine whether or not an item is complete." PREVIOUS="itemid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="fk_gradeitemid"/>
+        <KEY NAME="fk_gradeitemid" TYPE="foreign-unique" FIELDS="itemid" REFTABLE="grade_items" REFFIELDS="id" PREVIOUS="primary"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="grade_anonymous_grades" COMMENT="Temporary grade table housing the temporary final grade and adjustment value." PREVIOUS="grade_anonymous_items">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="anonymous_itemid"/>
+        <FIELD NAME="anonymous_itemid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="anonymous_itemid" NEXT="finalgrade"/>
+        <FIELD NAME="finalgrade" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" DECIMALS="5" PREVIOUS="userid" NEXT="adjust_value"/>
+        <FIELD NAME="adjust_value" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0.00000" SEQUENCE="false" DECIMALS="5" PREVIOUS="finalgrade"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="fk_gradeitemid"/>
+        <KEY NAME="fk_gradeitemid" TYPE="foreign" FIELDS="anonymous_itemid" REFTABLE="grade_anonymous_items" REFFIELDS="id" PREVIOUS="primary" NEXT="fk_userid"/>
+        <KEY NAME="fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="fk_gradeitemid"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
