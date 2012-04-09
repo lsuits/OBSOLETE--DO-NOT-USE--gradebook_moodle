@@ -23,6 +23,12 @@ class quick_edit_select extends quick_edit_screen {
                 continue;
             }
 
+            $options = $screen->options();
+
+            if (empty($options)) {
+                continue;
+            }
+
             $params = array(
                 'id' => $this->courseid,
                 'item' => $screen->item_type(),
@@ -33,7 +39,11 @@ class quick_edit_select extends quick_edit_screen {
 
             $html .= $OUTPUT->heading($screen->description());
 
-            $html .= $OUTPUT->single_select($url, 'itemid', $screen->options());
+            $html .= $OUTPUT->single_select($url, 'itemid', $options);
+        }
+
+        if (empty($html)) {
+            $OUTPUT->notification(get_string('no_screens', 'gradereport_quick_edit'));
         }
 
         return $html;

@@ -56,9 +56,20 @@ class grade_report_quick_edit extends grade_report {
         return 'quick_edit_' . $screen;
     }
 
-    public static function only_items() {
-        return function($item) {
-            return $item->itemtype != 'course' and $item->itemtype != 'category';
+    public static function filters() {
+        $classnames = array('grade_report_quick_edit', 'classname');
+        $classes = array_map($classnames, self::valid_screens());
+
+        $screens = array_filter($classes, function($screen) {
+            return method_exists($screen, 'filter');
+        });
+
+        return function($item) use ($screens) {
+            $reduced = function($in, $screen) use ($item) {
+                return $in && $screen::filter($item);
+            };
+
+            return array_reduce($screens, $reduced, true);
         };
     }
 

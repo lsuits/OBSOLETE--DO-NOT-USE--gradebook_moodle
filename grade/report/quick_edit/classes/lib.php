@@ -10,6 +10,10 @@ interface selectable_items {
     public function item_type();
 }
 
+interface item_filtering {
+    public function filter($item);
+}
+
 abstract class quick_edit_screen {
     var $courseid;
 
@@ -234,7 +238,7 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
 
             $html = $this->factory()->create($field)->format($grade, $tab);
 
-            if ($field == 'finalgrade') {
+            if ($field == 'finalgrade' and !empty($this->structure)) {
                 $html .= $this->structure->get_grade_analysis_icon($grade);
             }
 
@@ -275,7 +279,7 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
         return html_writer::tag(
             'div',
             $this->factory()->create('bulk_insert')->format($this->item)->html(),
-            array('quick_edit_bulk')
+            array('class' => 'quick_edit_bulk')
         );
     }
 

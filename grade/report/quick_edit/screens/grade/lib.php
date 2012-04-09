@@ -1,10 +1,29 @@
 <?php
 
-class quick_edit_grade extends quick_edit_tablelike implements selectable_items {
+class quick_edit_grade extends quick_edit_tablelike
+    implements selectable_items, item_filtering {
 
     private $requires_extra;
 
     var $structure;
+
+    private static $allow_categories;
+
+    public static function allow_categories() {
+        if (is_null(self::$allow_categories)) {
+            self::$allow_categories = get_config('moodle', 'grade_overridecat');
+        }
+
+        return self::$allow_categories;
+    }
+
+    public function filter($item) {
+        return (
+            self::allow_categories() or !(
+                $item->is_course_item() or $item->is_category_item()
+            )
+        );
+    }
 
     public function description() {
         return get_string('users');
@@ -47,15 +66,11 @@ class quick_edit_grade extends quick_edit_tablelike implements selectable_items 
 
         $this->item = grade_item::fetch($params);
 
+        $filter_fun = grade_report_quick_edit::filters();
 
-        $not_allowed = (
-            !get_config('moodle', 'grade_overridecat') and (
-                $this->item->is_course_item() or
-                $this->item->is_category_item()
-            )
-        );
+        $allowed = $filter_fun($this->item);
 
-        if ($not_allowed) {
+        if (empty($allowed)) {
             print_error('not_allowed', 'gradereport_quick_edit');
         }
 
