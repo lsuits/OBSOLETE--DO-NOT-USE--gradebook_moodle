@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="grade/report/grader/db" VERSION="20120404" COMMENT="XMLDB file for Moodle anonymous grading"
+<XMLDB PATH="grade/report/grader/db" VERSION="20120409" COMMENT="XMLDB file for Moodle anonymous grading"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="grade_anonymous_items" COMMENT="Anonymous grade items" NEXT="grade_anonymous_grades">
+    <TABLE NAME="grade_anon_items" COMMENT="Anonymous grade items" NEXT="grade_anon_grades">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="true" NEXT="itemid"/>
         <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The Moodle grade_item id reference" PREVIOUS="id" NEXT="complete"/>
@@ -15,7 +15,7 @@
         <KEY NAME="fk_gradeitemid" TYPE="foreign-unique" FIELDS="itemid" REFTABLE="grade_items" REFFIELDS="id" PREVIOUS="primary"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="grade_anonymous_grades" COMMENT="Temporary grade table housing the temporary final grade and adjustment value." PREVIOUS="grade_anonymous_items">
+    <TABLE NAME="grade_anon_grades" COMMENT="Temporary grade table housing the temporary final grade and adjustment value." PREVIOUS="grade_anon_items" NEXT="grade_anon_items_history">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="anonymous_itemid"/>
         <FIELD NAME="anonymous_itemid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
@@ -28,6 +28,50 @@
         <KEY NAME="fk_gradeitemid" TYPE="foreign" FIELDS="anonymous_itemid" REFTABLE="grade_anonymous_items" REFFIELDS="id" PREVIOUS="primary" NEXT="fk_userid"/>
         <KEY NAME="fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="fk_gradeitemid"/>
       </KEYS>
+    </TABLE>
+    <TABLE NAME="grade_anon_items_history" COMMENT="History table for anonymous grading" PREVIOUS="grade_anon_grades" NEXT="grade_anon_grades_history">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="action"/>
+        <FIELD NAME="action" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="oldid"/>
+        <FIELD NAME="oldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="action" NEXT="source"/>
+        <FIELD NAME="source" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="oldid" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="source" NEXT="loggeduser"/>
+        <FIELD NAME="loggeduser" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timemodified" NEXT="itemid"/>
+        <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="loggeduser" NEXT="complete"/>
+        <FIELD NAME="complete" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="itemid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="gradeanonhist_act_ix" UNIQUE="false" FIELDS="action" NEXT="gradeanonhist_old_ix"/>
+        <INDEX NAME="gradeanonhist_old_ix" UNIQUE="false" FIELDS="oldid" PREVIOUS="gradeanonhist_act_ix" NEXT="gradeanonhist_log_ix"/>
+        <INDEX NAME="gradeanonhist_log_ix" UNIQUE="false" FIELDS="loggeduser" PREVIOUS="gradeanonhist_old_ix" NEXT="gradeanonhist_ite_ix"/>
+        <INDEX NAME="gradeanonhist_ite_ix" UNIQUE="false" FIELDS="itemid" PREVIOUS="gradeanonhist_log_ix"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="grade_anon_grades_history" COMMENT="Anonymous grades history table" PREVIOUS="grade_anon_items_history">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="action"/>
+        <FIELD NAME="action" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="oldid"/>
+        <FIELD NAME="oldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="action" NEXT="source"/>
+        <FIELD NAME="source" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="oldid" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="source" NEXT="loggeduser"/>
+        <FIELD NAME="loggeduser" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timemodified" NEXT="anonymous_itemid"/>
+        <FIELD NAME="anonymous_itemid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="loggeduser" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="anonymous_itemid" NEXT="finalgrade"/>
+        <FIELD NAME="finalgrade" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" DECIMALS="5" PREVIOUS="userid" NEXT="adjust_value"/>
+        <FIELD NAME="adjust_value" TYPE="number" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0.00000" SEQUENCE="false" DECIMALS="5" PREVIOUS="finalgrade"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="gradeanongrahist_act_ix" UNIQUE="false" FIELDS="action" NEXT="gradeanongrahist_old_ix"/>
+        <INDEX NAME="gradeanongrahist_old_ix" UNIQUE="false" FIELDS="oldid" PREVIOUS="gradeanongrahist_act_ix" NEXT="gradeanongrahist_log_ix"/>
+        <INDEX NAME="gradeanongrahist_log_ix" UNIQUE="false" FIELDS="loggeduser" PREVIOUS="gradeanongrahist_old_ix" NEXT="gradeanongrahist_ait_ix"/>
+        <INDEX NAME="gradeanongrahist_ait_ix" UNIQUE="false" FIELDS="anonymous_itemid" PREVIOUS="gradeanongrahist_log_ix"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>
