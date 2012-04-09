@@ -11,17 +11,17 @@ class grade_anonymous extends grade_object {
 
     var $grade_item;
 
-    public $table = 'grade_anonymous_items';
+    public $table = 'grade_anon_items';
 
     public static function fetch($params) {
         return grade_object::fetch_helper(
-            $this->table, 'grade_anonymous', $params
+            'grade_anon_items', 'grade_anonymous', $params
         );
     }
 
     public static function fetch_all($params) {
         return grade_object::fetch_all_helper(
-            $this->table, 'grade_anonymous', $params
+            'grade_anon_items', 'grade_anonymous', $params
         );
     }
 
