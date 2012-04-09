@@ -42,15 +42,8 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
             return $itema->sortorder > $itemb->sortorder;
         });
 
-        $allow_cats = (bool) get_config('moodle', 'grade_overridecat');
+        $this->items = array_filter($items, grade_report_quick_edit::filters());
 
-        if ($allow_cats) {
-            $this->items = $items;
-        } else {
-            $filter_items = grade_report_quick_edit::only_items();
-
-            $this->items = array_filter($items, $filter_items);
-        }
         unset($items);
 
         $this->structure = new grade_structure();

@@ -26,7 +26,9 @@
 $string['pluginname'] = 'Quick edit';
 $string['quick_edit:view'] = 'View the '.$string['pluginname'].' report';
 
-$string['not_allowed'] = 'Not allowed to edit category or course item';
+$string['not_allowed'] = 'Not allowed to quick edit this item';
+
+$string['no_screens'] = 'Could not find a suitable Quick edit screen.';
 
 $string['exclude'] = 'Exclude';
 $string['override'] = 'Override';
