@@ -84,6 +84,7 @@ $string['aggregationsvisiblehelp'] = 'Select all aggregation types that should b
 $string['allgrades'] = 'All grades by category';
 $string['allstudents'] = 'All students';
 $string['allusers'] = 'All users';
+$string['anonymous'] = 'Anonymous';
 $string['anonymousadjusts'] = 'Anonymous adjusts +/-';
 $string['anonymousadjusts_help'] = 'In anonymous grading, final grades cannot be changed once committed. Adjustments allow changes within the specified constraints.';
 $string['anonymouscategories'] = 'Anonymous categories';
