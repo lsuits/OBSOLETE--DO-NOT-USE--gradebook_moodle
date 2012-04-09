@@ -132,6 +132,7 @@ if ($mform->is_cancelled()) {
 
     $grade_item = new grade_item(array('id'=>$id, 'courseid'=>$courseid));
     grade_item::set_properties($grade_item, $data);
+    unset($grade_item->anonymous);
     $grade_item->outcomeid = null;
 
     // Handle null decimals value
@@ -142,6 +143,15 @@ if ($mform->is_cancelled()) {
     if (empty($grade_item->id)) {
         $grade_item->itemtype = 'manual'; // all new items to be manual only
         $grade_item->insert();
+
+        // Anonymous check
+        if (isset($data->anonymous) and grade_anonymous::is_supported($course)) {
+            $anon = new grade_anonymous(array('itemid' => $grade_item->id));
+
+            if (empty($anon->id)) {
+                $anon->insert();
+            }
+        }
 
         // set parent if needed
         if (isset($data->parentcategory)) {

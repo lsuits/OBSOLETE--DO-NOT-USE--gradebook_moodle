@@ -34,6 +34,12 @@ class edit_item_form extends moodleform {
 /// visible elements
         $mform->addElement('header', 'general', get_string('gradeitem', 'grades'));
 
+        if (grade_anonymous::is_supported($COURSE)) {
+            $mform->addElement(
+                'checkbox', 'anonymous', get_string('anonymousitem', 'grades')
+            );
+        }
+
         $mform->addElement('text', 'itemname', get_string('itemname', 'grades'));
         $mform->addElement('text', 'iteminfo', get_string('iteminfo', 'grades'));
         $mform->addHelpButton('iteminfo', 'iteminfo', 'grades');
@@ -203,6 +209,17 @@ class edit_item_form extends moodleform {
         $mform =& $this->_form;
 
         if ($id = $mform->getElementValue('id')) {
+
+            if ($mform->elementExists('anonymous')) {
+                $anon = grade_anonymous::fetch(array('itemid' => $id));
+
+                if ($anon) {
+                    $mform->hardFreeze('anonymous');
+                } else {
+                    $mform->removeElement('anonymous');
+                }
+            }
+
             $grade_item = grade_item::fetch(array('id'=>$id));
 
             if (!$grade_item->is_raw_used()) {

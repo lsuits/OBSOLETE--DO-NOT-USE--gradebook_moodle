@@ -92,6 +92,7 @@ $string['anonymousfield'] = 'Anonymous field';
 $string['anonymousfield_help'] = 'The selected profile field will store the anonymous number. Create one [here]({$a}).';
 $string['anonymousgrading'] = 'Anonymous grading';
 $string['anonymousgrading_help'] = 'Enable anonymous grading in Moodle';
+$string['anonymousitem'] = 'Anonymous item';
 $string['autosort'] = 'Auto-sort';
 $string['availableidnumbers'] = 'Available ID numbers';
 $string['average'] = 'Average';

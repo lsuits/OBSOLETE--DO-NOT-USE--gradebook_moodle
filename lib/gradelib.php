@@ -34,6 +34,7 @@ require_once($CFG->libdir . '/grade/grade_item.php');
 require_once($CFG->libdir . '/grade/grade_grade.php');
 require_once($CFG->libdir . '/grade/grade_scale.php');
 require_once($CFG->libdir . '/grade/grade_outcome.php');
+require_once($CFG->libdir . '/grade/grade_anonymous.php');
 
 /////////////////////////////////////////////////////////////////////
 ///// Start of public API for communication with modules/blocks /////
