@@ -817,9 +817,11 @@ class grade_report_grader extends grade_report {
                     );
 
                     if ($can_quick_edit) {
+                        $is_anon = isset($this->anonymous_items[$element['object']->id]);
+
                         $url = new moodle_url('/grade/report/quick_edit/index.php', array(
                             'id' => $this->course->id,
-                            'item' => 'grade',
+                            'item' => $is_anon ? 'anonymous' : 'grade',
                             'itemid' => $element['object']->id,
                             'group' => $this->currentgroup
                         ));

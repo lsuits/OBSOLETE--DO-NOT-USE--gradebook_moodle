@@ -33,11 +33,49 @@ class grade_anonymous extends grade_object {
         return $this->grade_item;
     }
 
-    public function check_completed($course) {
-    }
-
     public function is_completed() {
         return $this->complete;
+    }
+
+    public static function anonymous_profile() {
+        global $DB;
+
+        $fields = $DB->get_records('user_info_field');
+
+        if (empty($fields)) {
+            debugging('No user profile fields to choose from.');
+            return false;
+        }
+
+        $fieldid = get_config('moodle', 'grade_anonymous_field');
+
+        if (empty($fieldid) or !isset($fields[$fieldid])) {
+            debugging('Selected anonymous profile field does not exists.');
+            return false;
+        }
+
+        return $fieldid;
+    }
+
+    public static function anonymous_users($real_users) {
+        global $DB;
+
+        $profileid = self::anonymous_profile();
+
+        if (empty($profileid)) {
+            return array();
+        }
+
+        $userids = implode(',', array_keys($real_users));
+
+        $sql = 'SELECT d.userid, d.data FROM {user_info_data} d
+            WHERE d.userid IN (' . $userids.')
+              AND d.fieldid = :fieldid';
+
+        $params = array('fieldid' => $profileid);
+        $anonymous_users = $DB->get_records_sql($sql, $params);
+
+        return $anonymous_users;
     }
 
     public static function is_supported($course) {
