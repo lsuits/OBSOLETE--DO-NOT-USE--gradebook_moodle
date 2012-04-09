@@ -69,14 +69,18 @@ class quick_edit_anonymous extends quick_edit_tablelike
     public function headers() {
         return array(
             get_string('anonymous', 'grades'),
-            get_string('range', 'grades')
+            get_string('range', 'grades'),
+            get_string('grade', 'grades')
         );
     }
 
     public function format_line($user) {
+        $grade = $this->item->load_grade($user);
+
         return array(
             $user->data,
-            $this->item_range()
+            $this->item_range(),
+            $this->factory()->create('finalgrade')->format($grade)
         );
     }
 
