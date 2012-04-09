@@ -221,6 +221,7 @@ class edit_item_form extends moodleform {
                 $anon = grade_anonymous::fetch(array('itemid' => $id));
 
                 if ($anon) {
+                    $mform->setDefault('anonymous', 1);
                     $mform->hardFreeze('anonymous');
                 } else {
                     $mform->removeElement('anonymous');
