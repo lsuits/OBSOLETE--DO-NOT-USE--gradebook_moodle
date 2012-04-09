@@ -129,6 +129,9 @@ class grade_report_grader extends grade_report {
         // Grab the grade_tree for this course
         $this->gtree = new grade_tree($this->courseid, true, $switch, $this->collapsed, $nooutcomes);
 
+        // Load Anonymous items
+        $this->load_anonymous();
+
         $this->sortitemid = $sortitemid;
 
         // base url for sorting by first/last name
@@ -914,9 +917,14 @@ class grade_report_grader extends grade_report {
                     $gradeval = $grade->finalgrade;
                 }
 
+                $is_anon = (
+                    isset($this->anonymous_items[$itemid]) and
+                    !$this->anonymous_items[$itemid]->is_completed()
+                );
+
                 // MDL-11274
                 // Hide grades in the grader report if the current grader doesn't have 'moodle/grade:viewhidden'
-                if (!$this->canviewhidden and $grade->is_hidden()) {
+                if (!$this->canviewhidden and $grade->is_hidden() or $is_anon) {
                     if (!empty($CFG->grade_hiddenasdate) and $grade->get_datesubmitted() and !$item->is_category_item() and !$item->is_course_item()) {
                         // the problem here is that we do not have the time when grade value was modified, 'timemodified' is general modification date for grade_grades records
                         $itemcell->text = html_writer::tag('span', userdate($grade->get_datesubmitted(),get_string('strftimedatetimeshort')), array('class'=>'datesubmitted'));
@@ -1642,6 +1650,24 @@ class grade_report_grader extends grade_report {
              check_browser_version('Opera', '6.0') ||
              check_browser_version('Chrome', '6') ||
              check_browser_version('Safari', '300'));
+    }
+
+    public function load_anonymous() {
+
+        if (empty($this->anonymous_items)) {
+            global $DB;
+            $sql = 'SELECT anon.* FROM {grade_items} gi, {grade_anon_items} anon
+                WHERE anon.itemid = gi.id';
+
+            $this->anonymous_items = array();
+
+            foreach ($DB->get_records_sql($sql) as $item) {
+                $this->anonymous_items[$item->itemid] =
+                    grade_anonymous::fetch(array('id' => $item->id));
+            }
+        }
+
+        return $this->anonymous_items;
     }
 
     /**
