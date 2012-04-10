@@ -33,21 +33,21 @@ class grade_anonymous extends grade_object {
         return $this->grade_item;
     }
 
-    public function load_grade($user, $default=true) {
+    public function load_grade($userid, $default=true) {
         if (empty($this->itemid) or empty($this->id)) {
             return array();
         }
 
         $grade = grade_anonymous_grade::fetch(array(
             'anonymous_itemid' => $this->id,
-            'userid' => $user->id
+            'userid' => $userid
         ));
 
         if (!$grade and $default) {
             $instance = new stdClass;
 
             $instance->anonymous_itemid = $this->id;
-            $instance->userid = $user->id;
+            $instance->userid = $userid;
 
             $grade = new grade_anonymous_grade($instance, false);
         }
@@ -63,6 +63,28 @@ class grade_anonymous extends grade_object {
         return $grade;
     }
 
+    public function update_final_grade($userid, $finalgrade=false, $source=null, $feedback=false, $feedbackformat=FORMAT_MOODLE, $usermodified=null) {
+        $grade = $this->load_grade($userid);
+
+        if (!$this->is_completed()) {
+            // Clients of API should be mindful of scales; empty scale is -1
+            if ($grade->id and empty($finalgrade)) {
+                return $grade->delete($source);
+            }
+
+            $grade->finalgrade = $this->bounded_grade($finalgrade);
+            return $grade->update($source);
+        } else {
+            $grade->adjust_value = $finalgrade ? (float) $finalgrade : 0.00000;
+            $grade->update($source);
+
+            return $this->load_item()->update_final_grade(
+                $userid, $this->bounded_grade($grade->real_grade()), $source,
+                $feedback, $feedbackformat, $usermodified
+            );
+        }
+    }
+
     public function check_completed($real_users) {
         $anon_users = $this->anonymous_users($real_users);
 
@@ -75,7 +97,7 @@ class grade_anonymous extends grade_object {
         global $DB;
 
         $userids = implode(',', array_keys($real_users));
-        $select = 'userid IN (' . $userids.') AND anonymous_itemid = :itemid';
+        $select = 'userid IN (' . $userids . ') AND anonymous_itemid = :itemid';
         $params = array('itemid' => $this->id);
 
         $count = $DB->count_records_select('grade_anon_grades', $select, $params);
@@ -168,6 +190,14 @@ class grade_anonymous extends grade_object {
         }
 
         return false;
+    }
+
+    public function __call($name, $args) {
+        if (!method_exists($this->load_item(), $name)) {
+            print_error('anonymousnomethod', 'grades', '', $name);
+        }
+
+        return call_user_func_array(array($this->load_item(), $name), $args);
     }
 }
 
