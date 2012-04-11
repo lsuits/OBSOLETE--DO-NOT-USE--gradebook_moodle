@@ -241,6 +241,8 @@ class grade_anonymous_grade extends grade_object {
 
     var $grade_item;
 
+    var $underlying;
+
     public static function fetch($params) {
         return grade_object::fetch_helper(
             'grade_anon_grades', 'grade_anonymous_grade', $params
@@ -268,6 +270,17 @@ class grade_anonymous_grade extends grade_object {
         }
 
         return $this->grade_item;
+    }
+
+    public function load_grade() {
+        if ($this->load_item()->is_completed() and empty($this->underlying)) {
+            $this->underlying = grade_grade::fetch(array(
+                'userid' => $this->userid,
+                'itemid' => $this->load_item()->itemid
+            ));
+        }
+
+        return $this->underlying;
     }
 
     public function real_grade() {
@@ -305,5 +318,13 @@ class grade_anonymous_grade extends grade_object {
         }
 
         return self::$adjust_boundary;
+    }
+
+    public function __call($name, $args) {
+        if ($u = $this->load_grade() and method_exists($u, $name)) {
+            return call_user_func_array(array($u, $name), $args);
+        }
+
+        return null;
     }
 }
