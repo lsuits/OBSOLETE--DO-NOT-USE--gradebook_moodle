@@ -78,7 +78,7 @@ class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
     var $name = 'adjust_value';
 
     public function is_disabled() {
-        $boundary = $this->grade->adjust_boundary();
+        $boundary = $this->grade->load_item()->adjust_boundary();
         return empty($boundary) ? true : parent::is_disabled();
     }
 
@@ -126,7 +126,7 @@ class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
             $obj = new stdClass;
             $obj->username = fullname($user);
             $obj->itemname = $this->grade->load_item()->get_name();
-            $obj->boundary = $this->grade->adjust_boundary();
+            $obj->boundary = $this->grade->load_item()->adjust_boundary();
             $code = get_string($code, 'grades', $obj) . ' ';
         }
 
