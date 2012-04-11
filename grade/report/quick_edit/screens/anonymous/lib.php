@@ -44,6 +44,7 @@ class quick_edit_anonymous extends quick_edit_tablelike
 
         if ($this->item->is_completed()) {
             $defaults[] = 'adjust_value';
+            $defaults[] = 'exclude';
         }
 
         return $defaults;
@@ -54,6 +55,7 @@ class quick_edit_anonymous extends quick_edit_tablelike
             array_unshift($line, '');
             $line[1] = get_string('firstname') . ' / ' . get_string('lastname');
             $line[] = get_string('anonymousadjusts', 'grades');
+            $line[] = $this->make_toggle_links('exclude');
         }
 
         return $line;
@@ -141,10 +143,6 @@ class quick_edit_anonymous extends quick_edit_tablelike
     }
 
     public function bulk_insert() {
-        if (!$this->item->is_completed()) {
-            return parent::bulk_insert();
-        }
-
         return '';
     }
 
