@@ -9,6 +9,8 @@ class grade_anonymous extends grade_object {
 
     var $complete = false;
 
+    public static $profileid;
+
     var $grade_item;
 
     public $table = 'grade_anon_items';
@@ -86,6 +88,8 @@ class grade_anonymous extends grade_object {
     }
 
     public function check_completed($real_users) {
+        global $DB;
+
         $anon_users = $this->anonymous_users($real_users);
 
         $real_count = count($real_users);
@@ -93,8 +97,6 @@ class grade_anonymous extends grade_object {
         if (count($anon_users) != $real_count) {
             return false;
         }
-
-        global $DB;
 
         $userids = implode(',', array_keys($real_users));
         $select = 'userid IN (' . $userids . ') AND anonymous_itemid = :itemid';
@@ -135,21 +137,25 @@ class grade_anonymous extends grade_object {
     public static function anonymous_profile() {
         global $DB;
 
-        $fields = $DB->get_records('user_info_field');
+        if (empty(self::$profileid)) {
+            $fields = $DB->get_records('user_info_field');
 
-        if (empty($fields)) {
-            debugging('No user profile fields to choose from.');
-            return false;
+            if (empty($fields)) {
+                debugging('No user profile fields to choose from.');
+                return false;
+            }
+
+            $fieldid = get_config('moodle', 'grade_anonymous_field');
+
+            if (empty($fieldid) or !isset($fields[$fieldid])) {
+                debugging('Selected anonymous profile field does not exists.');
+                return false;
+            }
+
+            self::$profileid = $fieldid;
         }
 
-        $fieldid = get_config('moodle', 'grade_anonymous_field');
-
-        if (empty($fieldid) or !isset($fields[$fieldid])) {
-            debugging('Selected anonymous profile field does not exists.');
-            return false;
-        }
-
-        return $fieldid;
+        return self::$profileid;
     }
 
     public static function anonymous_users($real_users) {
@@ -255,5 +261,13 @@ class grade_anonymous_grade extends grade_object {
 
     public function real_grade() {
         return $this->finalgrade + (float)$this->adjust_value;
+    }
+
+    public function anonymous_number() {
+        global $DB;
+
+        $params = array('fieldid' => $this->load_item()->anonymous_profile());
+
+        return $DB->get_field('user_info_data', 'data', $params);
     }
 }
