@@ -919,14 +919,15 @@ class grade_report_grader extends grade_report {
                     $gradeval = $grade->finalgrade;
                 }
 
-                $is_anon = (
-                    isset($this->anonymous_items[$itemid]) and
+                $is_anon = isset($this->anonymous_items[$itemid]);
+                $is_anon_working = (
+                    $is_anon and
                     !$this->anonymous_items[$itemid]->is_completed()
                 );
 
                 // MDL-11274
                 // Hide grades in the grader report if the current grader doesn't have 'moodle/grade:viewhidden'
-                if (!$this->canviewhidden and $grade->is_hidden() or $is_anon) {
+                if (!$this->canviewhidden and $grade->is_hidden() or $is_anon_working) {
                     if (!empty($CFG->grade_hiddenasdate) and $grade->get_datesubmitted() and !$item->is_category_item() and !$item->is_course_item()) {
                         // the problem here is that we do not have the time when grade value was modified, 'timemodified' is general modification date for grade_grades records
                         $itemcell->text = html_writer::tag('span', userdate($grade->get_datesubmitted(),get_string('strftimedatetimeshort')), array('class'=>'datesubmitted'));
@@ -966,7 +967,7 @@ class grade_report_grader extends grade_report {
                 }
 
                 // Do not show any icons if no grade (no record in DB to match)
-                if (!$item->needsupdate and $USER->gradeediting[$this->courseid]) {
+                if (!$item->needsupdate and $USER->gradeediting[$this->courseid] and !$is_anon) {
                     $itemcell->text .= $this->get_icons($element);
                 }
 
@@ -988,7 +989,7 @@ class grade_report_grader extends grade_report {
                 if ($item->needsupdate) {
                     $itemcell->text .= html_writer::tag('span', get_string('error'), array('class'=>"gradingerror$hidden"));
 
-                } else if ($USER->gradeediting[$this->courseid]) {
+                } else if ($USER->gradeediting[$this->courseid] and !$is_anon) {
 
                     // Editing means user edit manual item raw
                     if ($item->is_manual_item()) {
