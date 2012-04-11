@@ -60,12 +60,16 @@ if ($mform->is_cancelled()) {
 
 } else if ($data = $mform->get_data()) {
     $data = (array)$data;
-    $general = array('displaytype', 'decimalpoints', 'aggregationposition');
+    $general = array('displaytype', 'decimalpoints', 'anonymous_adjusts', 'aggregationposition');
     foreach ($data as $key=>$value) {
         if (!in_array($key, $general) and strpos($key, 'report_') !== 0
                                       and strpos($key, 'import_') !== 0
                                       and strpos($key, 'export_') !== 0) {
             continue;
+        }
+        if ($key == 'anonymous_adjusts' and
+            !is_numeric($value) or trim($value) === '') {
+            $value = -1;
         }
         if ($value == -1) {
             $value = null;

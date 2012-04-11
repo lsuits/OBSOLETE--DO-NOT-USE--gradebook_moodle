@@ -1,6 +1,10 @@
 <?php
 
 class grade_anonymous extends grade_object {
+    public $table = 'grade_anon_items';
+
+    public static $profileid;
+
     var $required_fields = array('id', 'itemid', 'complete');
 
     var $id;
@@ -9,11 +13,9 @@ class grade_anonymous extends grade_object {
 
     var $complete = false;
 
-    public static $profileid;
-
     var $grade_item;
 
-    public $table = 'grade_anon_items';
+    var $adjust_boundary;
 
     public static function fetch($params) {
         return grade_object::fetch_helper(
@@ -132,6 +134,20 @@ class grade_anonymous extends grade_object {
         }
     }
 
+    public function adjust_boundary() {
+        global $CFG;
+
+        if (is_null($this->adjust_boundary)) {
+            $this->adjust_boundary = (float) grade_get_setting(
+                $this->load_item()->courseid,
+                'anonymous_adjusts',
+                $CFG->grade_anonymous_adjusts
+            );
+        }
+
+        return $this->adjust_boundary;
+    }
+
     public static function anonymous_profile() {
         global $DB;
 
@@ -219,25 +235,23 @@ class grade_anonymous extends grade_object {
 class grade_anonymous_grade extends grade_object {
     public $table = 'grade_anon_grades';
 
-    private static $adjust_boundary;
-
     var $required_fields = array(
         'id', 'userid', 'anonymous_itemid', 'finalgrade', 'adjust_value'
     );
 
+    var $adjust_value = 0;
+
     var $anonymous_itemid;
+
+    var $anonymous_item;
 
     var $userid;
 
     var $finalgrade;
 
-    var $adjust_value = 0;
-
-    var $anonymous_item;
+    var $rawgrade;
 
     var $itemid;
-
-    var $rawgrade;
 
     var $grade_item;
 
@@ -299,7 +313,7 @@ class grade_anonymous_grade extends grade_object {
     }
 
     public function bound_adjust_value($value) {
-        $max = abs($this->adjust_boundary());
+        $max = abs($this->load_item()->adjust_boundary());
         $min = -1 * $max;
 
         if ($value < $min) {
@@ -309,15 +323,6 @@ class grade_anonymous_grade extends grade_object {
         } else {
             return $value;
         }
-    }
-
-    public static function adjust_boundary() {
-        if (empty(self::$adjust_boundary)) {
-            self::$adjust_boundary =
-                (float)get_config('moodle', 'grade_anonymous_adjusts');
-        }
-
-        return self::$adjust_boundary;
     }
 
     public function __call($name, $args) {
