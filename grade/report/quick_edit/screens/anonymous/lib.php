@@ -51,7 +51,9 @@ class quick_edit_anonymous extends quick_edit_tablelike
 
     public function additional_headers($line) {
         if ($this->item->is_completed()) {
-            return $line[] = get_string('anonymousadjusts', 'grades');
+            array_unshift($line, '');
+            $line[1] = get_string('firstname') . ' / ' . get_string('lastname');
+            $line[] = get_string('anonymousadjusts', 'grades');
         }
 
         return $line;
@@ -70,16 +72,18 @@ class quick_edit_anonymous extends quick_edit_tablelike
     public function init($self_item_is_empty = false) {
         $roleids = explode(',', get_config('moodle', 'gradebookroles'));
 
-        $this->students = get_role_users($roleids, $this->context, false, '',
-            'u.lastname, u.firstname', null, $this->groupid);
-
-        $this->items = grade_anonymous::anonymous_users($this->students);
-
         if ($self_item_is_empty) {
             return;
         }
 
         $this->item = grade_anonymous::fetch(array('itemid' => $this->itemid));
+
+        $this->students = get_role_users($roleids, $this->context, false, '',
+            'u.lastname, u.firstname', null, $this->groupid);
+
+        $this->items = $this->item->is_completed() ?
+            $this->students :
+            grade_anonymous::anonymous_users($this->students);
     }
 
     public function headers() {
@@ -91,9 +95,21 @@ class quick_edit_anonymous extends quick_edit_tablelike
     }
 
     public function format_line($user) {
+        global $OUTPUT;
+
         $grade = $this->fetch_grade_or_default($this->item, $user->id);
 
-        $line = array($user->data, $this->item_range());
+        if ($this->item->is_completed()) {
+            $user->imagealt = fullname($user);
+            $line = array(
+                $OUTPUT->user_picture($user),
+                $this->format_link('user', $user->id, $user->imagealt)
+            );
+        } else {
+            $line = array($user->data);
+        }
+
+        $line[] = $this->item_range();
 
         return $this->format_definition($line, $grade);
     }
@@ -113,7 +129,7 @@ class quick_edit_anonymous extends quick_edit_tablelike
     }
 
     public function fetch_grade_or_default($item, $userid) {
-        return $item->load_grade($userid);
+        return $this->item->load_grade($userid);
     }
 
     public function factory() {
@@ -122,5 +138,25 @@ class quick_edit_anonymous extends quick_edit_tablelike
         }
 
         return $this->_factory;
+    }
+
+    public function bulk_insert() {
+        if (!$this->item->is_completed()) {
+            return parent::bulk_insert();
+        }
+
+        return '';
+    }
+
+    public function process($data) {
+        $warnings = parent::process($data);
+
+        $anon = $this->item;
+
+        if (empty($warnings) and !$anon->is_completed()) {
+            $anon->set_completed($anon->check_completed($this->students));
+        }
+
+        return $warnings;
     }
 }
