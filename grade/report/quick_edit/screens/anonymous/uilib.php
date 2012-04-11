@@ -2,7 +2,7 @@
 
 class anonymous_ui_factory extends quick_edit_grade_ui_factory {
     public function create($type) {
-        $attempt = 'anonymous_quick_edi_' . $type;
+        $attempt = 'anonymous_quick_edit_' . $type;
 
         if (class_exists($attempt)) {
             return $this->wrap($attempt);
@@ -22,14 +22,24 @@ class anonymous_quick_edit_finalgrade extends quick_edit_finalgrade_ui {
     }
 
     function set($value) {
+        // Swap grade_items
+        $moodle_grade_item = $this->grade->load_grade_item();
+
+        $this->grade->grade_item = $this->grade->load_item();
+
         $msg = parent::set($value);
+
+        $this->grade->grade_item = $moodle_grade_item;
 
         // Mask student
         if (!empty($msg) and !$this->grade->load_item()->is_completed()) {
             global $DB;
-            $user = $DB->get_record('user', array('id' => $grade->userid), 'id, firstname, lastname');
 
-            $msg = preg_replace('/' . fullname($user) . '/', $grade->anonymous_number(), $msg);
+            $params = array('id' => $this->grade->userid);
+            $user = $DB->get_record('user', $params, 'id, firstname, lastname');
+
+            $number = $this->grade->anonymous_number();
+            $msg = preg_replace('/' . fullname($user) . '/', $number, $msg);
         }
 
         return $msg;
@@ -65,7 +75,7 @@ class quick_edit_adjust_value_attribute extends quick_edit_text_attribute {
 }
 
 class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
-    var $name = 'finalgrade';
+    var $name = 'adjust_value';
 
     public function is_disabled() {
         $boundary = $this->grade->adjust_boundary();
@@ -103,9 +113,9 @@ class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
 
         $code = '';
         if ($bounded < $submitted_value) {
-            $code = 'morethanmax';
+            $code = 'anonymousmorethanmax';
         } else if($bounded > $submitted_value) {
-            $code = 'lessthanmin';
+            $code = 'anonymouslessthanmin';
         }
 
         // Diff checker will fail on screen
@@ -116,11 +126,15 @@ class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
             $obj = new stdClass;
             $obj->username = fullname($user);
             $obj->itemname = $this->grade->load_item()->get_name();
+            $obj->boundary = $this->grade->adjust_boundary();
             $code = get_string($code, 'grades', $obj) . ' ';
         }
 
         if ($current_value != $bounded) {
+            $moodle_grade_item = $this->grade->grade_item;
+            $this->grade->grade_item = $this->grade->load_item();
             $code .= parent::set($bounded);
+            $this->grade->grade_item = $moodle_grade_item;
         }
 
         return $code;
