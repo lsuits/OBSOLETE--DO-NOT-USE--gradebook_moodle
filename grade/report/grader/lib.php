@@ -920,14 +920,10 @@ class grade_report_grader extends grade_report {
                 }
 
                 $is_anon = isset($this->anonymous_items[$itemid]);
-                $is_anon_working = (
-                    $is_anon and
-                    !$this->anonymous_items[$itemid]->is_completed()
-                );
 
                 // MDL-11274
                 // Hide grades in the grader report if the current grader doesn't have 'moodle/grade:viewhidden'
-                if (!$this->canviewhidden and $grade->is_hidden() or $is_anon_working) {
+                if (!$this->canviewhidden and $grade->is_hidden()) {
                     if (!empty($CFG->grade_hiddenasdate) and $grade->get_datesubmitted() and !$item->is_category_item() and !$item->is_course_item()) {
                         // the problem here is that we do not have the time when grade value was modified, 'timemodified' is general modification date for grade_grades records
                         $itemcell->text = html_writer::tag('span', userdate($grade->get_datesubmitted(),get_string('strftimedatetimeshort')), array('class'=>'datesubmitted'));

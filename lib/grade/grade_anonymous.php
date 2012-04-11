@@ -189,21 +189,14 @@ class grade_anonymous extends grade_object {
     }
 
     public function delete($source = null) {
-        if (parent::delete($source)) {
-            $grades = grade_anonymous_grade::fetch_all(array(
-                'anonymous_itemid' => $this->itemid
-            ));
+        $params = array('anonymous_itemid' => $this->id);
 
-            if ($grades) {
-                foreach ($grades as $grade) {
-                    $grade->delete($source);
-                }
+        if ($grades = grade_anonymous_grade::fetch_all($params)) {
+            foreach ($grades as $grade) {
+                $grade->delete($source);
             }
-
-            return $this->load_item()->delete($source);
         }
-
-        return false;
+        return parent::delete($source);
     }
 
     public function __call($name, $args) {

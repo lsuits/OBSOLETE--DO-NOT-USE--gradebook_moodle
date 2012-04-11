@@ -41,6 +41,11 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('nocourseid');
 }
 
+$p = array('itemid' => $itemid);
+if (grade_anonymous::is_supported($course) and grade_anonymous::fetch($p)) {
+    print_error('anonymousnotallowed', 'grades');
+}
+
 $PAGE->set_pagelayout('incourse');
 require_login($course);
 $context = get_context_instance(CONTEXT_COURSE, $course->id);
