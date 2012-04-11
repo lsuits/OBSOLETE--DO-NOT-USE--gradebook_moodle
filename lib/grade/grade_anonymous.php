@@ -77,7 +77,9 @@ class grade_anonymous extends grade_object {
             $grade->finalgrade = $this->bounded_grade($finalgrade);
             return $grade->update($source);
         } else {
-            $grade->adjust_value = $finalgrade ? (float) $finalgrade : 0.00000;
+            $grade->adjust_value = $finalgrade ?
+                $grade->bound_adjust_value($finalgrade) : 0;
+
             $grade->update($source);
 
             return $this->load_item()->update_final_grade(
@@ -210,6 +212,8 @@ class grade_anonymous extends grade_object {
 class grade_anonymous_grade extends grade_object {
     public $table = 'grade_anon_grades';
 
+    private static $adjust_boundary;
+
     var $required_fields = array(
         'id', 'userid', 'anonymous_itemid', 'finalgrade', 'adjust_value'
     );
@@ -220,7 +224,7 @@ class grade_anonymous_grade extends grade_object {
 
     var $finalgrade;
 
-    var $adjust_value = 0.00000;
+    var $adjust_value = 0;
 
     var $anonymous_item;
 
@@ -269,5 +273,27 @@ class grade_anonymous_grade extends grade_object {
         $params = array('fieldid' => $this->load_item()->anonymous_profile());
 
         return $DB->get_field('user_info_data', 'data', $params);
+    }
+
+    public function bound_adjust_value($value) {
+        $max = abs($this->adjust_boundary());
+        $min = -1 * $boundary;
+
+        if ($value < $min) {
+            return $min;
+        } else if ($value > $max) {
+            return $max;
+        } else {
+            return $value;
+        }
+    }
+
+    public static function adjust_boundary() {
+        if (empty(self::$adjust_boundary)) {
+            self::$adjust_boundary =
+                get_config('moodle', 'grade_anonymous_adjusts');
+        }
+
+        return self::$adjust_boundary;
     }
 }
