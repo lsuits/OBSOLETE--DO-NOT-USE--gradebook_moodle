@@ -36,6 +36,11 @@ abstract class quick_edit_screen {
         $this->init(empty($itemid));
     }
 
+    public function setup_structure() {
+        $this->structure = new grade_structure();
+        $this->structure->modinfo = get_fast_modinfo($this->course);
+    }
+
     public function format_link($screen, $itemid, $display = null) {
         $url = new moodle_url('/grade/report/quick_edit/index.php', array(
             'id' => $this->courseid,
@@ -123,6 +128,8 @@ abstract class quick_edit_screen {
     public function process($data) {
         $warnings = array();
 
+        $fields = $this->definition();
+
         foreach ($data as $varname => $throw) {
             if (preg_match("/(\w+)_(\d+)_(\d+)/", $varname, $matches)) {
                 $itemid = $matches[2];
@@ -130,8 +137,6 @@ abstract class quick_edit_screen {
             } else {
                 continue;
             }
-
-            $fields = $this->definition();
 
             if (!in_array($matches[1], $fields)) {
                 continue;
@@ -228,7 +233,7 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
             }
         }
 
-        parent::process($data);
+        return parent::process($data);
     }
 
     public function format_definition($line, $grade) {

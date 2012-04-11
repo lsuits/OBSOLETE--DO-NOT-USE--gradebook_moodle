@@ -488,12 +488,20 @@ class quick_edit_exclude_ui extends quick_edit_grade_attribute_format implements
                 return false;
             }
 
+            $grade_item = $this->grade->grade_item;
+
             // Fill in arbitrary grade to be excluded
-            $this->grade->grade_item->update_final_grade(
-                $this->grade->userid, 0, 'quick_edit', null, FORMAT_MOODLE
+            $grade_item->update_final_grade(
+                $this->grade->userid, null, 'quick_edit', null, FORMAT_MOODLE
+            );
+
+            $grade_params = array(
+                'userid' => $this->grade->userid,
+                'itemid' => $this->grade->itemid
             );
 
             $this->grade = grade_grade::fetch($grade_params);
+            $this->grade->grade_item = $grade_item;
         }
 
         $state = $value == 0 ? false : true;

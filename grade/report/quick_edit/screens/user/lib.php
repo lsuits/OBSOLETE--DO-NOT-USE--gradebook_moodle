@@ -46,10 +46,7 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
 
         unset($items);
 
-        $this->structure = new grade_structure();
-        $this->structure->modinfo = get_fast_modinfo(
-            $DB->get_record('course', array('id' => $this->courseid))
-        );
+        $this->setup_structure();
     }
 
     public function headers() {

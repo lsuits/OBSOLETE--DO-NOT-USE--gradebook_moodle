@@ -3,7 +3,7 @@
 class quick_edit_grade extends quick_edit_tablelike
     implements selectable_items, item_filtering {
 
-    private $requires_extra;
+    private $requires_extra = false;
 
     var $structure;
 
@@ -44,6 +44,8 @@ class quick_edit_grade extends quick_edit_tablelike
             $def[] = 'override';
         }
 
+        $def[] = 'exclude';
+
         return $def;
     }
 
@@ -76,10 +78,7 @@ class quick_edit_grade extends quick_edit_tablelike
 
         $this->requires_extra = !$this->item->is_manual_item();
 
-        $this->structure = new grade_structure();
-        $this->structure->modinfo = get_fast_modinfo(
-            $DB->get_record('course', array('id' => $this->courseid))
-        );
+        $this->setup_structure();
     }
 
     public function headers() {
@@ -116,6 +115,8 @@ class quick_edit_grade extends quick_edit_tablelike
         if ($this->requires_extra) {
             $headers[] = $this->make_toggle_links('override');
         }
+
+        $headers[] = $this->make_toggle_links('exclude');
 
         return $headers;
     }
