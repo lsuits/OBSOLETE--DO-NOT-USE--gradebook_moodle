@@ -75,7 +75,7 @@ class grade_anonymous extends grade_object {
             }
 
             $grade->finalgrade = $this->bounded_grade($finalgrade);
-            return $grade->update($source);
+            return $grade->id ? $grade->update($source) : $grade->insert($source);
         } else {
             $grade->adjust_value = $finalgrade ?
                 $grade->bound_adjust_value($finalgrade) : 0;
@@ -128,11 +128,7 @@ class grade_anonymous extends grade_object {
                 );
             }
         } else {
-            $grades = grade_grade::fetch_all(array('itemid' => $this->itemid));
-
-            foreach ($grades as $grade) {
-                $grade->delete();
-            }
+            $this->load_item()->delete_all_grades();
         }
     }
 
@@ -194,6 +190,16 @@ class grade_anonymous extends grade_object {
 
     public function delete($source = null) {
         if (parent::delete($source)) {
+            $grades = grade_anonymous_grade::fetch_all(array(
+                'anonymous_itemid' => $this->itemid
+            ));
+
+            if ($grades) {
+                foreach ($grades as $grade) {
+                    $grade->delete($source);
+                }
+            }
+
             return $this->load_item()->delete($source);
         }
 
@@ -206,6 +212,14 @@ class grade_anonymous extends grade_object {
         }
 
         return call_user_func_array(array($this->load_item(), $name), $args);
+    }
+
+    public function __get($name) {
+        if (isset($this->load_item()->$name)) {
+            return $this->load_item()->$name;
+        }
+
+        return null;
     }
 }
 
@@ -270,14 +284,17 @@ class grade_anonymous_grade extends grade_object {
     public function anonymous_number() {
         global $DB;
 
-        $params = array('fieldid' => $this->load_item()->anonymous_profile());
+        $params = array(
+            'userid' => $this->userid,
+            'fieldid' => $this->load_item()->anonymous_profile()
+        );
 
         return $DB->get_field('user_info_data', 'data', $params);
     }
 
     public function bound_adjust_value($value) {
         $max = abs($this->adjust_boundary());
-        $min = -1 * $boundary;
+        $min = -1 * $max;
 
         if ($value < $min) {
             return $min;
@@ -291,7 +308,7 @@ class grade_anonymous_grade extends grade_object {
     public static function adjust_boundary() {
         if (empty(self::$adjust_boundary)) {
             self::$adjust_boundary =
-                get_config('moodle', 'grade_anonymous_adjusts');
+                (float)get_config('moodle', 'grade_anonymous_adjusts');
         }
 
         return self::$adjust_boundary;
