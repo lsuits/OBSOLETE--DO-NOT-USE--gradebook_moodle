@@ -344,6 +344,9 @@ class grade_item extends grade_object {
      * @return bool success
      */
     public function delete($source=null) {
+        if ($anon = grade_anonymous::fetch(array('itemid' => $this->id))) {
+            $anon->delete($source);
+        }
         $this->delete_all_grades($source);
         return parent::delete($source);
     }

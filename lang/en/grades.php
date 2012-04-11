@@ -96,6 +96,7 @@ $string['anonymousgrading_help'] = 'Enable anonymous grading in Moodle';
 $string['anonymousitem'] = 'Anonymous item';
 $string['anonymouslessthanmin'] = 'The adjustment entered for {$a->itemname} for {$a->username} is less than -{$a->boundary}';
 $string['anonymousmorethanmax'] = 'The adjustment entered for {$a->itemname} for {$a->username} is more than {$a->boundary}';
+$string['anonymousnotallowed'] = 'Directly editing anonymous grades is not allowed.';
 $string['autosort'] = 'Auto-sort';
 $string['availableidnumbers'] = 'Available ID numbers';
 $string['average'] = 'Average';
