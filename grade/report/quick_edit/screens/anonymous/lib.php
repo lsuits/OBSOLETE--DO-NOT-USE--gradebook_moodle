@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(__FILE__) . '/uilib.php';
+
 class quick_edit_anonymous extends quick_edit_tablelike
     implements selectable_items, item_filtering {
 
@@ -54,10 +56,10 @@ class quick_edit_anonymous extends quick_edit_tablelike
     public function init($self_item_is_empty = false) {
         $roleids = explode(',', get_config('moodle', 'gradebookroles'));
 
-        $students = get_role_users($roleids, $this->context, false, '',
+        $this->students = get_role_users($roleids, $this->context, false, '',
             'u.lastname, u.firstname', null, $this->groupid);
 
-        $this->items = grade_anonymous::anonymous_users($students);
+        $this->items = grade_anonymous::anonymous_users($this->students);
 
         if ($self_item_is_empty) {
             return;
@@ -70,30 +72,37 @@ class quick_edit_anonymous extends quick_edit_tablelike
         return array(
             get_string('anonymous', 'grades'),
             get_string('range', 'grades'),
-            get_string('grade', 'grades')
+            get_string('grade', 'grades'),
+            get_string('anonymousadjusts', 'grades')
         );
     }
 
     public function format_line($user) {
-        $grade = $this->item->load_grade($user);
+        $grade = $this->fetch_grade_or_default($this->item, $user->id);
 
         return array(
             $user->data,
             $this->item_range(),
-            $this->factory()->create('finalgrade')->format($grade)
+            new anonymous_quick_edit_finalgrade($grade),
+            new anonymous_quick_edit_adjust_value($grade)
         );
     }
 
     public function item_range() {
         if (empty($this->range)) {
             $this->range = $this->factory()
-                ->create('range')->format($this->item->load_item());
+                ->create('range')
+                ->format($this->item->load_item());
         }
 
         return $this->range;
     }
 
     public function heading() {
-        return $this->item->load_item()->get_name();
+        return $this->item->get_name();
+    }
+
+    public function fetch_grade_or_default($item, $userid) {
+        return $item->load_grade($userid);
     }
 }
