@@ -1,9 +1,24 @@
 <?php
 
+class anonymous_ui_factory extends quick_edit_grade_ui_factory {
+    public function create($type) {
+        $attempt = 'anonymous_quick_edi_' . $type;
+
+        if (class_exists($attempt)) {
+            return $this->wrap($attempt);
+        } else {
+            return parent::create($type);
+        }
+    }
+}
+
 class anonymous_quick_edit_finalgrade extends quick_edit_finalgrade_ui {
-    function is_disabled() {
-        return $this->grade->load_item()->is_completed() ? true :
-            parent::is_disabled();
+    function determine_format() {
+        if ($this->grade->load_item()->is_completed()) {
+            return new quick_edit_empty_element($this->get_value());
+        } else {
+            return parent::determine_format();
+        }
     }
 
     function set($value) {
@@ -50,7 +65,12 @@ class quick_edit_adjust_value_attribute extends quick_edit_text_attribute {
 }
 
 class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
-    var $name = 'adjust_value';
+    var $name = 'finalgrade';
+
+    public function is_disabled() {
+        $boundary = $this->grade->adjust_boundary();
+        return empty($boundary) ? true : parent::is_disabled();
+    }
 
     public function adjust_type_name() {
         return "adjust_type_{$this->grade->itemid}_{$this->grade->userid}";
@@ -74,13 +94,35 @@ class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
     }
 
     public function set($value) {
+        global $DB;
+
         $current_value = $this->get_value();
         $submitted_value = $value * required_param($this->adjust_type_name(), PARAM_INT);
 
-        if ($current_value != $submitted_value) {
-            return parent::set($submitted_value);
+        $bounded = $this->grade->bound_adjust_value($submitted_value);
+
+        $code = '';
+        if ($bounded < $submitted_value) {
+            $code = 'morethanmax';
+        } else if($bounded > $submitted_value) {
+            $code = 'lessthanmin';
         }
 
-        return '';
+        // Diff checker will fail on screen
+        if ($code) {
+            $params = array('id' => $this->grade->userid);
+            $user = $DB->get_record('user', $params, 'id, firstname, lastname');
+
+            $obj = new stdClass;
+            $obj->username = fullname($user);
+            $obj->itemname = $this->grade->load_item()->get_name();
+            $code = get_string($code, 'grades', $obj) . ' ';
+        }
+
+        if ($current_value != $bounded) {
+            $code .= parent::set($bounded);
+        }
+
+        return $code;
     }
 }

@@ -40,7 +40,21 @@ class quick_edit_anonymous extends quick_edit_tablelike
     }
 
     public function definition() {
-        return array('finalgrade');
+        $defaults = array('finalgrade');
+
+        if ($this->item->is_completed()) {
+            $defaults[] = 'adjust_value';
+        }
+
+        return $defaults;
+    }
+
+    public function additional_headers($line) {
+        if ($this->item->is_completed()) {
+            return $line[] = get_string('anonymousadjusts', 'grades');
+        }
+
+        return $line;
     }
 
     public function filter($item) {
@@ -69,23 +83,19 @@ class quick_edit_anonymous extends quick_edit_tablelike
     }
 
     public function headers() {
-        return array(
+        return $this->additional_headers(array(
             get_string('anonymous', 'grades'),
             get_string('range', 'grades'),
-            get_string('grade', 'grades'),
-            get_string('anonymousadjusts', 'grades')
-        );
+            get_string('grade', 'grades')
+        ));
     }
 
     public function format_line($user) {
         $grade = $this->fetch_grade_or_default($this->item, $user->id);
 
-        return array(
-            $user->data,
-            $this->item_range(),
-            new anonymous_quick_edit_finalgrade($grade),
-            new anonymous_quick_edit_adjust_value($grade)
-        );
+        $line = array($user->data, $this->item_range());
+
+        return $this->format_definition($line, $grade);
     }
 
     public function item_range() {
@@ -104,5 +114,13 @@ class quick_edit_anonymous extends quick_edit_tablelike
 
     public function fetch_grade_or_default($item, $userid) {
         return $item->load_grade($userid);
+    }
+
+    public function factory() {
+        if (empty($this->_factory)) {
+            $this->_factory = new anonymous_ui_factory();
+        }
+
+        return $this->_factory;
     }
 }
