@@ -161,7 +161,9 @@ class grade_anonymous extends grade_object {
 
             $fieldid = get_config('moodle', 'grade_anonymous_field');
 
-            if (empty($fieldid) or !isset($fields[$fieldid])) {
+            $fieldid = empty($fieldid) ? reset($fields)->id : $fieldid;
+
+            if (!isset($fields[$fieldid])) {
                 debugging('Selected anonymous profile field does not exists.');
                 return false;
             }
