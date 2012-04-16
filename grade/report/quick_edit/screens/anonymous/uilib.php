@@ -46,34 +46,6 @@ class anonymous_quick_edit_finalgrade extends quick_edit_finalgrade_ui {
     }
 }
 
-class quick_edit_adjust_value_attribute extends quick_edit_text_attribute {
-    function __construct($type_name, $value_name, $adjust_value, $is_disabled = false, $tabindex = null) {
-        $this->type_name = $type_name;
-        $this->adjust_value = $adjust_value;
-        $abs = preg_replace('/^\-/', '', $adjust_value);
-        parent::__construct($value_name, $abs, $is_disabled, $tabindex);
-    }
-
-    function html() {
-        $dropdown = new quick_edit_dropdown_attribute(
-            $this->type_name,
-            array(-1 => '-', 1 => '+'),
-            $this->adjust_value < 0 ? -1 : 1,
-            $this->is_disabled,
-            $this->tabindex
-        );
-
-        $text = new quick_edit_text_attribute(
-            $this->name,
-            $this->value,
-            $this->is_disabled,
-            $this->tabindex
-        );
-
-        return sprintf("%s %s", $dropdown->html(), $text->html());
-    }
-}
-
 class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
     var $name = 'adjust_value';
 
@@ -94,8 +66,7 @@ class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
     }
 
     public function determine_format() {
-        return new quick_edit_adjust_value_attribute(
-            $this->adjust_type_name(),
+        return new quick_edit_text_attribute(
             $this->get_name(),
             $this->get_value(),
             $this->is_disabled(),
@@ -106,15 +77,12 @@ class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
     public function set($value) {
         global $DB;
 
-        $current_value = $this->get_value();
-        $submitted_value = $value * required_param($this->adjust_type_name(), PARAM_INT);
-
-        $bounded = $this->grade->bound_adjust_value($submitted_value);
+        $bounded = $this->grade->bound_adjust_value($value);
 
         $code = '';
-        if ($bounded < $submitted_value) {
+        if ($bounded < $value) {
             $code = 'anonymousmorethanmax';
-        } else if($bounded > $submitted_value) {
+        } else if($bounded > $value) {
             $code = 'anonymouslessthanmin';
         }
 
@@ -130,12 +98,9 @@ class anonymous_quick_edit_adjust_value extends quick_edit_finalgrade_ui {
             $code = get_string($code, 'grades', $obj) . ' ';
         }
 
-        if ($current_value != $bounded) {
-            $moodle_grade_item = $this->grade->grade_item;
-            $this->grade->grade_item = $this->grade->load_item();
-            $code .= parent::set($bounded);
-            $this->grade->grade_item = $moodle_grade_item;
-        }
+        $this->grade->load_item()->update_final_grade(
+            $this->grade->userid, $bounded, 'quick_edit'
+        );
 
         return $code;
     }
