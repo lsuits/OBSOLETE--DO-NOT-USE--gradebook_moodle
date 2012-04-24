@@ -426,12 +426,7 @@ class grade_category extends grade_object {
                     continue;
                 }
 
-                if ($oldweighted) {
-                    $child->aggregationcoef = 0.00000;
-                } else {
-                    $child->aggregationcoef = 1.00000;
-                }
-
+                $child->aggregationcoef = ($oldweighted) ? 0.00000 : 1.00000;
                 $child->update();
             }
         }
