@@ -179,7 +179,14 @@ abstract class quick_edit_screen {
             }
         }
 
-        return $warnings;
+        // Some post-processing
+        $event_data = new stdClass;
+        $event_data->warnings = $warnings;
+        $event_data->instance = $this;
+
+        events_trigger(get_class($this) . '_edited', $event_data);
+
+        return $event_data->warnings;
     }
 
     public function definition() {
