@@ -30,7 +30,8 @@ class quick_edit_anonymous extends quick_edit_tablelike
 
         $sql = 'SELECT gi.id, gi.itemname
             FROM {grade_items} gi, {grade_anon_items} anon
-            WHERE gi.id = anon.itemid';
+            WHERE gi.id = anon.itemid
+              AND gi.courseid = ' . $this->courseid;
 
         return $DB->get_records_sql_menu($sql);
     }
