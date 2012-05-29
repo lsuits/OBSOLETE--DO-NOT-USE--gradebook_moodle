@@ -963,13 +963,13 @@ class grade_edit_tree_column_droplow extends grade_edit_tree_column_category {
     }
 
     public function get_category_cell($category, $levelclass, $params) {
-        $options = array(0 => get_string('none'));
 
-        for ($i=1; $i<=20; $i++) {
-            $options[$i] = $i;
+        $disabled = '';
+        if (!empty($category->keephigh)) {
+            $disabled = 'DISABLED';
         }
 
-        $droplow = html_writer::select($options, 'droplow_'.$category->id, $category->droplow, null);
+        $droplow = '<input '.$disabled.' type="text" size="3" id="droplow_'.$category->id.'" name="droplow_'.$category->id.'" value="'.$category->droplow.'" />';
 
         if ($this->forced) {
             $droplow = $category->droplow;
@@ -1002,13 +1002,13 @@ class grade_edit_tree_column_keephigh extends grade_edit_tree_column_category {
     }
 
     public function get_category_cell($category, $levelclass, $params) {
-        $options_h = array(0 => get_string('all'));
 
-        for ($i=1; $i<=20; $i++) {
-            $options_h[$i] = $i;
+        $disabled = '';
+        if (!empty($category->droplow)) {
+            $disabled = 'DISABLED';
         }
 
-        $keephigh = html_writer::select($options_h, 'keephigh_'.$category->id, $category->keephigh, null);
+        $keephigh = '<input '.$disabled.' type="text" size="3" id="keephigh_'.$category->id.'" name="keephigh_'.$category->id.'" value="'.$category->keephigh.'" />';
 
         if ($this->forced) {
             $keephigh = $category->keephigh;
