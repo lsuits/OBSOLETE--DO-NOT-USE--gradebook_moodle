@@ -160,24 +160,25 @@ if (!$edit) {
         }
         krsort($letters, SORT_NUMERIC);
 
-        $old_ids = array();
-        if ($records = $DB->get_records('grade_letters', array('contextid' => $context->id), 'lowerboundary ASC', 'id')) {
-            $old_ids = array_keys($records);
-        }
+        $records = $DB->get_records('grade_letters', array('contextid' => $context->id), 'lowerboundary ASC', 'id');
 
         foreach($letters as $boundary=>$letter) {
-            $record = new stdClass();
-            $record->letter        = $letter;
-            $record->lowerboundary = $boundary;
-            $record->contextid     = $context->id;
+            $params = array(
+                'letter' => $letter,
+                'lowerboundary' => $boundary,
+                'contextid' => $context->id
+            );
 
-            if ($old_id = array_pop($old_ids)) {
-                $record->id = $old_id;
-                $DB->update_record('grade_letters', $record);
+            if ($record = $DB->get_record('grade_letters', $params)) {
+                unset($records[$record->id]);
+                continue;
             } else {
+                $record = (object) $params;
                 $DB->insert_record('grade_letters', $record);
             }
         }
+
+        $old_ids = array_keys($records);
 
         foreach($old_ids as $old_id) {
             $DB->delete_records('grade_letters', array('id' => $old_id));
