@@ -1052,17 +1052,26 @@ class grade_edit_tree_column_multfactor extends grade_edit_tree_column {
         $size = 4;
         $multfactor = $item->multfactor;
 
+        $params = array(
+            'type' => 'text',
+            'id' => 'multfactor'.$item->id,
+            'name' => 'multfactor_'.$item->id
+        );
+
         if ($this->curve_to) {
             $decimals = $item->get_decimals();
             $size += $decimals;
             $multfactor = format_float(($multfactor * $item->grademax), $decimals);
+            $params['class'] = 'curving';
         } else {
             $multfactor = grade_edit_tree::format_number($multfactor);
         }
 
-        $multfactor = '<input type="text" size="'.$size.'" id="multfactor'.$item->id.'" name="multfactor_'.$item->id.'" value="'.$multfactor.'" />';
+        $params += array('size' => $size, 'value' => $multfactor);
 
-        $itemcell->text = $multfactor;
+        $multfactor = html_writer::empty_tag('input', $params);
+
+        $itemcell->text .= $multfactor;
         return $itemcell;
     }
 
