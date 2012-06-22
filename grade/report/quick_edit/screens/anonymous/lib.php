@@ -40,7 +40,7 @@ class quick_edit_anonymous extends quick_edit_tablelike
         return 'anonymous';
     }
 
-    public function definition() {
+    public function original_definition() {
         $defaults = array('finalgrade');
 
         if ($this->item->is_completed()) {
@@ -87,9 +87,12 @@ class quick_edit_anonymous extends quick_edit_tablelike
         $this->items = $this->item->is_completed() ?
             $this->students :
             grade_anonymous::anonymous_users($this->students);
+
+        $this->definition = $this->original_definition();
+        $this->headers = $this->original_headers();
     }
 
-    public function headers() {
+    public function original_headers() {
         return $this->additional_headers(array(
             get_string('anonymous', 'grades'),
             get_string('range', 'grades'),
