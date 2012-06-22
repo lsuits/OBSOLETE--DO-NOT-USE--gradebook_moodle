@@ -37,7 +37,7 @@ class quick_edit_grade extends quick_edit_tablelike
         return 'user';
     }
 
-    public function definition() {
+    public function original_definition() {
         $def = array('finalgrade', 'feedback');
 
         if ($this->requires_extra) {
@@ -79,9 +79,12 @@ class quick_edit_grade extends quick_edit_tablelike
         $this->requires_extra = !$this->item->is_manual_item();
 
         $this->setup_structure();
+
+        $this->set_definition($this->original_definition());
+        $this->set_headers($this->original_headers());
     }
 
-    public function headers() {
+    public function original_headers() {
         $headers = array(
             '',
             get_string('firstname') . ' / ' . get_string('lastname'),

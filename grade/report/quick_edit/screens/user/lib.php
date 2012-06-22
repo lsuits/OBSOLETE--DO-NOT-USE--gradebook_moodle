@@ -18,12 +18,6 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
         return 'grade';
     }
 
-    public function definition() {
-        return array(
-            'finalgrade', 'feedback', 'override', 'exclude'
-        );
-    }
-
     public function display_group_selector() {
         return false;
     }
@@ -47,9 +41,14 @@ class quick_edit_user extends quick_edit_tablelike implements selectable_items {
         unset($items);
 
         $this->setup_structure();
+
+        $this->definition = array(
+            'finalgrade', 'feedback', 'override', 'exclude'
+        );
+        $this->set_headers($this->original_headers());
     }
 
-    public function headers() {
+    public function original_headers() {
         return array(
             '',
             get_string('assessmentname', 'gradereport_quick_edit'),

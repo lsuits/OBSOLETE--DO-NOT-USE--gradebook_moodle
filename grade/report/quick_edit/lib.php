@@ -91,6 +91,8 @@ class grade_report_quick_edit extends grade_report {
 
         $this->screen = new $class($courseid, $itemid, $groupid);
 
+        events_trigger($class . '_instantiated', $this->screen);
+
         // Load custom or predifined js
         $this->screen->js();
 

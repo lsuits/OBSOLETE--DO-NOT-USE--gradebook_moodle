@@ -182,15 +182,12 @@ abstract class quick_edit_screen {
         // Some post-processing
         $event_data = new stdClass;
         $event_data->warnings = $warnings;
+        $event_data->post_data = $data;
         $event_data->instance = $this;
 
         events_trigger(get_class($this) . '_edited', $event_data);
 
         return $event_data->warnings;
-    }
-
-    public function definition() {
-        return array();
     }
 
     public function display_group_selector() {
@@ -201,9 +198,29 @@ abstract class quick_edit_screen {
 abstract class quick_edit_tablelike extends quick_edit_screen implements tabbable {
     var $items;
 
-    public abstract function headers();
+    protected $headers = array();
+
+    protected $definition = array();
 
     public abstract function format_line($item);
+
+    public function headers() {
+        return $this->headers;
+    }
+
+    public function set_headers($overwrite) {
+        $this->headers = $overwrite;
+        return $this;
+    }
+
+    public function definition() {
+        return $this->definition;
+    }
+
+    public function set_definition($overwrite) {
+        $this->definition = $overwrite;
+        return $this;
+    }
 
     public function get_tabindex() {
         return (count($this->definition()) * $this->total) + $this->index;
@@ -265,8 +282,6 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
 
         $table->head = $this->headers();
 
-        $table->data = array();
-
         // To be used for extra formatting
         $this->index = 0;
         $this->total = count($this->items);
@@ -275,6 +290,14 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
             $this->index ++;
             $table->data[] = $this->format_line($item);
         }
+
+        $underlying = get_class($this);
+
+        $data = new stdClass;
+        $data->table = $table;
+        $data->instance = $this;
+
+        events_trigger($underlying . '_table_built', $data);
 
         $button_attr = array('class' => 'quick_edit_buttons');
         $button_html = implode(' ', $this->buttons());
