@@ -399,9 +399,7 @@ class quick_edit_feedback_ui extends quick_edit_grade_attribute_format implement
     var $name = 'feedback';
 
     function get_value() {
-        return $this->grade->feedback ?
-            format_text($this->grade->feedback, $this->grade->feedbackformat) :
-            '';
+        return $this->grade->feedback ? $this->grade->feedback : '';
     }
 
     function is_disabled() {
