@@ -966,7 +966,8 @@ class grade_item extends grade_object {
      * @return bool
      */
     public function is_raw_used() {
-        return ($this->is_external_item() and !$this->is_calculated() and !$this->is_outcome_item());
+        $category_item = ($this->is_category_item() or $this->is_course_item());
+        return ($this->is_external_item() or $category_item and !$this->is_calculated() and !$this->is_outcome_item());
     }
 
     /**

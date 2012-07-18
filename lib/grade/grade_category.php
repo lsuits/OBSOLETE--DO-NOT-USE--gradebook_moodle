@@ -617,6 +617,9 @@ class grade_category extends grade_object {
         // recalculate the grade back to requested range
         $finalgrade = grade_grade::standardise_score($agg_grade, 0, 1, $this->grade_item->grademin, $this->grade_item->grademax);
 
+        $finalgrade *= $this->grade_item->multfactor;
+        $finalgrade += $this->grade_item->plusfactor;
+
         $grade->finalgrade = $this->grade_item->bounded_grade($finalgrade);
 
         // update in db if changed
@@ -854,6 +857,9 @@ class grade_category extends grade_object {
         $this->apply_limit_rules($grade_values, $items);
 
         $sum = array_sum($grade_values);
+        $sum *= $this->grade_item->multfactor;
+        $sum += $this->grade_item->plusfactor;
+
         $grade->finalgrade = $this->grade_item->bounded_grade($sum);
 
         // update in db if changed

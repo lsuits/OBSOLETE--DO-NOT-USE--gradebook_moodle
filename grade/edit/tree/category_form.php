@@ -171,6 +171,18 @@ class edit_category_form extends moodleform {
         $mform->disabledIf('grade_item_gradepass', 'grade_item_gradetype', 'eq', GRADE_TYPE_NONE);
         $mform->disabledIf('grade_item_gradepass', 'grade_item_gradetype', 'eq', GRADE_TYPE_TEXT);
 
+        $mform->addElement('text', 'grade_item_multfactor', get_string('multfactor', 'grades'));
+        $mform->addHelpButton('grade_item_multfactor', 'multfactor', 'grades');
+        $mform->setAdvanced('grade_item_multfactor');
+        $mform->disabledIf('grade_item_multfactor', 'gradetype', 'eq', GRADE_TYPE_NONE);
+        $mform->disabledIf('grade_item_multfactor', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
+        $mform->addElement('text', 'grade_item_plusfactor', get_string('plusfactor', 'grades'));
+        $mform->addHelpButton('grade_item_plusfactor', 'plusfactor', 'grades');
+        $mform->setAdvanced('grade_item_plusfactor');
+        $mform->disabledIf('grade_item_plusfactor', 'gradetype', 'eq', GRADE_TYPE_NONE);
+        $mform->disabledIf('grade_item_plusfactor', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
         /// grade display prefs
         $default_gradedisplaytype = grade_get_setting($COURSE->id, 'displaytype', $CFG->grade_displaytype);
         $options = array(GRADE_DISPLAY_TYPE_DEFAULT            => get_string('default', 'grades'),
