@@ -299,13 +299,13 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
 
         events_trigger($underlying . '_table_built', $data);
 
-        $button_attr = array('class' => 'quick_edit_buttons');
+        $button_attr = array('class' => 'quick_edit_buttons submit');
         $button_html = implode(' ', $this->buttons());
 
         $buttons = html_writer::tag('div', $button_html, $button_attr);
 
         return html_writer::tag('form',
-            html_writer::table($table) . $this->bulk_insert() . $buttons,
+            $buttons . html_writer::table($table) . $this->bulk_insert() . $buttons,
             array('method' => 'POST')
         );
     }

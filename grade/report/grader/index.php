@@ -159,6 +159,7 @@ $reporthtml = $report->get_grade_table();
 if ($USER->gradeediting[$course->id] && ($report->get_pref('showquickfeedback') || $report->get_pref('quickgrading'))) {
     echo '<form action="index.php" method="post">';
     echo '<div>';
+    echo '<div class="submit"><input type="submit" value="'.s(get_string('update')).'" /></div>';
     echo '<input type="hidden" value="'.s($courseid).'" name="id" />';
     echo '<input type="hidden" value="'.sesskey().'" name="sesskey" />';
     echo '<input type="hidden" value="grader" name="report"/>';

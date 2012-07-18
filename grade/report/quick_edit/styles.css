@@ -13,3 +13,7 @@
 #page-grade-report-quick_edit-index div.generalbox form div {
   text-align: center;
 }
+
+#page-grade-report-quick_edit-index .quick_edit_buttons {
+    padding: 10px 0;
+}
