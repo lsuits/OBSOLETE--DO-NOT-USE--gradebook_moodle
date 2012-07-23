@@ -133,6 +133,9 @@ class grade_report_grader extends grade_report {
         // Grab the grade_tree for this course
         $this->gtree = new grade_tree($this->courseid, true, $switch, $this->collapsed, $nooutcomes);
 
+        // Load Anonymous items
+        $this->load_anonymous();
+
         $this->sortitemid = $sortitemid;
 
         // base url for sorting by first/last name
@@ -143,8 +146,6 @@ class grade_report_grader extends grade_report {
         if (!empty($this->page) && !empty($studentsperpage)) {
             $this->baseurl->params(array('perpage' => $studentsperpage, 'page' => $this->page));
         }
-
-        $this->pbarurl = new moodle_url('/grade/report/grader/index.php', array('id' => $this->courseid));
 
         $this->setup_name_filters();
 
@@ -644,6 +645,9 @@ class grade_report_grader extends grade_report {
         if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
             $colspan++;
         }
+        if ($this->get_pref('integrate_quick_edit')) {
+            $colspan++;
+        }
         $colspan += count($extrafields);
 
         $levels = count($this->gtree->levels) - 1;
@@ -667,6 +671,9 @@ class grade_report_grader extends grade_report {
         $studentheader->id = 'studentheader';
         if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
             $studentheader->colspan = 2;
+        }
+        if ($this->get_pref('integrate_quick_edit')) {
+            $studentheader->colspan++;
         }
         $studentheader->text = $arrows['studentname'];
 
@@ -730,6 +737,23 @@ class grade_report_grader extends grade_report {
             }
 
             $userrow->cells[] = $usercell;
+
+            if ($this->get_pref('integrate_quick_edit')) {
+                $quickeditcell = new html_table_cell();
+                $quickeditcell->attributes['class'] = 'quickedituser';
+                $quickeditcell->header = true;
+                $a = new stdClass();
+                $a->user = fullname($user);
+                $strgradesforuser = get_string('gradesforuser', 'grades', $a);
+                $url = new moodle_url('/grade/report/quick_edit/index.php', array(
+                    'id' => $this->course->id,
+                    'item' => 'user',
+                    'itemid' => $user->id,
+                    'group' => $this->currentgroup
+                ));
+                $quickeditcell->text = html_writer::link($url, 'QE');
+                $userrow->cells[] = $quickeditcell;
+            }
 
             if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
                 $userreportcell = new html_table_cell();
@@ -865,6 +889,38 @@ class grade_report_grader extends grade_report {
                         $arrow = $this->get_sort_arrow('move', $sortlink);
                     }
 
+                    $is_category_item = (
+                        $element['object']->itemtype == 'course' or
+                        $element['object']->itemtype == 'category'
+                    );
+
+                    $can_category_quick_edit = (
+                        $is_category_item and
+                        !empty($this->overridecat)
+                    );
+
+                    $can_quick_edit = (
+                        $this->get_pref('integrate_quick_edit') and
+                        (!$is_category_item or $can_category_quick_edit)
+                    );
+
+                    if ($can_quick_edit) {
+                        $is_anon = isset($this->anonymous_items[$element['object']->id]);
+
+                        $url = new moodle_url('/grade/report/quick_edit/index.php', array(
+                            'id' => $this->course->id,
+                            'item' => $is_anon ? 'anonymous' : 'grade',
+                            'itemid' => $element['object']->id,
+                            'group' => $this->currentgroup
+                        ));
+                        $link = html_writer::link($url, ' QE ');
+                        $qe_link = html_writer::tag('span', $link, array(
+                            'class' => 'quickeditgrade'
+                        ));
+                    } else {
+                        $qe_link = '';
+                    }
+
                     $headerlink = $this->gtree->get_element_header($element, true, $this->get_pref('showactivityicons'), false);
 
                     $itemcell = new html_table_cell();
@@ -878,7 +934,8 @@ class grade_report_grader extends grade_report {
                     }
 
                     $itemcell->colspan = $colspan;
-                    $itemcell->text = shorten_text($headerlink);
+                    $itemcell->text = $qe_link;
+                    $itemcell->text .= shorten_text($headerlink);
                     $itemcell->text .= $percents . $arrow;
                     $itemcell->header = true;
                     $itemcell->scope = 'col';
@@ -974,6 +1031,8 @@ class grade_report_grader extends grade_report {
                     $jsarguments['grades'][] = array('user'=>$userid, 'item'=>$itemid, 'grade'=>$gradevalforJS);
                 }
 
+                $is_anon = isset($this->anonymous_items[$itemid]);
+
                 // MDL-11274
                 // Hide grades in the grader report if the current grader doesn't have 'moodle/grade:viewhidden'
                 if (!$this->canviewhidden and $grade->is_hidden()) {
@@ -1016,7 +1075,7 @@ class grade_report_grader extends grade_report {
                 }
 
                 // Do not show any icons if no grade (no record in DB to match)
-                if (!$item->needsupdate and $USER->gradeediting[$this->courseid]) {
+                if (!$item->needsupdate and $USER->gradeediting[$this->courseid] and !$is_anon) {
                     $itemcell->text .= $this->get_icons($element);
                 }
 
@@ -1038,7 +1097,7 @@ class grade_report_grader extends grade_report {
                 if ($item->needsupdate) {
                     $itemcell->text .= html_writer::tag('span', get_string('error'), array('class'=>"gradingerror$hidden"));
 
-                } else if ($USER->gradeediting[$this->courseid]) {
+                } else if ($USER->gradeediting[$this->courseid] and !$is_anon) {
 
                     // Editing means user edit manual item raw
                     if ($item->is_manual_item()) {
@@ -1712,6 +1771,24 @@ class grade_report_grader extends grade_report {
              check_browser_version('Safari', '300'));
     }
 
+    public function load_anonymous() {
+
+        if (empty($this->anonymous_items)) {
+            global $DB;
+            $sql = 'SELECT anon.* FROM {grade_items} gi, {grade_anon_items} anon
+                WHERE anon.itemid = gi.id';
+
+            $this->anonymous_items = array();
+
+            foreach ($DB->get_records_sql($sql) as $item) {
+                $this->anonymous_items[$item->itemid] =
+                    grade_anonymous::fetch(array('id' => $item->id));
+            }
+        }
+
+        return $this->anonymous_items;
+    }
+
     /**
      * Refactored function for generating HTML of sorting links with matching arrows.
      * Returns an array with 'studentname' and 'idnumber' as keys, with HTML ready
@@ -1888,4 +1965,5 @@ class grade_report_grader extends grade_report {
         return ' (' . format_float($computed * 100, $decimals) . '%) ';
     }
 }
+
 
