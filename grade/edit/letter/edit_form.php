@@ -31,6 +31,8 @@ require_once $CFG->libdir.'/formslib.php';
 class edit_letter_form extends moodleform {
 
     public function definition() {
+        global $DB;
+
         $mform =& $this->_form;
         $num   = $this->_customdata['num'];
         $admin = $this->_customdata['admin'];
@@ -46,16 +48,38 @@ class edit_letter_form extends moodleform {
         $gradeletter       = get_string('gradeletter', 'grades');
         $gradeboundary     = get_string('gradeboundary', 'grades');
 
-        $percentages = array(-1 => get_string('unused', 'grades'));
+        $unused_str = get_string('unused', 'grades');
+
+        $percentages = array(-1 => $unused_str);
         for ($i=100; $i > -1; $i--) {
             $percentages[$i] = "$i %";
         }
+
+        $custom = get_config('moodle', 'grade_letters_custom');
+        $strict = get_config('moodle', 'grade_letters_strict');
+
+        $default = get_config('moodle', 'grade_letters_names');
+
+        if ($default and $scale = $DB->get_record('scale', array('id' => $default))) {
+            $default_letters = $scale->scale;
+        } else {
+            $default_letters = get_string('lettersdefaultletters', 'grades');
+        }
+
+        $default_letters = array_reverse(explode(',', $default_letters));
+        $letters = array('' => get_string('unused', 'grades')) +
+            array_combine($default_letters, $default_letters);
 
         for($i=1; $i<$num+1; $i++) {
             $gradelettername = 'gradeletter'.$i;
             $gradeboundaryname = 'gradeboundary'.$i;
 
-            $mform->addElement('text', $gradelettername, $gradeletter." $i");
+            if ($strict) {
+                $mform->addElement('select', $gradelettername, $gradeletter." $i", $letters);
+            } else {
+                $mform->addElement('text', $gradelettername, $gradeletter." $i");
+            }
+
             if ($i == 1) {
                 $mform->addHelpButton($gradelettername, 'gradeletter', 'grades');
             }
@@ -63,15 +87,31 @@ class edit_letter_form extends moodleform {
 
             if (!$admin) {
                 $mform->disabledIf($gradelettername, 'override', 'notchecked');
-                $mform->disabledIf($gradelettername, $gradeboundaryname, 'eq', -1);
+
+                if ($custom) {
+                    $mform->disabledIf($gradeboundaryname, $gradelettername, 'eq', '');
+                } else {
+                    $mform->disabledIf($gradelettername, $gradeboundaryname, 'eq', -1);
+                }
             }
 
-            $mform->addElement('select', $gradeboundaryname, $gradeboundary." $i", $percentages);
+            if ($custom) {
+                $mform->addElement('text', $gradeboundaryname, $gradeboundary." $i");
+
+                $mform->addRule($gradeboundaryname, null, 'numeric', '', 'client');
+
+                $mform->setType($gradeboundaryname, PARAM_FLOAT);
+                $mform->setDefault($gradeboundaryname, '');
+            } else {
+                $mform->addElement('select', $gradeboundaryname, $gradeboundary." $i", $percentages);
+
+                $mform->setType($gradeboundaryname, PARAM_INT);
+                $mform->setDefault($gradeboundaryname, -1);
+            }
+
             if ($i == 1) {
                 $mform->addHelpButton($gradeboundaryname, 'gradeboundary', 'grades');
             }
-            $mform->setDefault($gradeboundaryname, -1);
-            $mform->setType($gradeboundaryname, PARAM_INT);
 
             if (!$admin) {
                 $mform->disabledIf($gradeboundaryname, 'override', 'notchecked');
