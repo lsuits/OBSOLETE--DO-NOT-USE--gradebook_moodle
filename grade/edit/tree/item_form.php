@@ -334,6 +334,12 @@ class edit_item_form extends moodleform {
         if (!$mform->elementExists('aggregationcoef') and !$mform->elementExists('parentcategory')) {
             $mform->removeElement('headerparent');
         }
+
+        // Freeze grademin element if option unavailable
+        $min_is_hidden = (bool) get_config('moodle', 'grade_min_hide');
+        if ($min_is_hidden and $mform->elementExists('grademin')) {
+            $mform->hardFreeze('grademin');
+        }
     }
 
 
