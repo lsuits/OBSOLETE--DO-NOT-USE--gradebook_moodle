@@ -1023,15 +1023,20 @@ class grade_edit_tree_column_keephigh extends grade_edit_tree_column_category {
 }
 
 class grade_edit_tree_column_multfactor extends grade_edit_tree_column {
+    private $curve_to;
 
     public function __construct($params) {
+        $this->curve_to = get_config('moodle', 'grade_multfactor_alt');
         parent::__construct();
     }
 
     public function get_header_cell() {
         global $OUTPUT;
         $headercell = clone($this->headercell);
-        $headercell->text = get_string('multfactor', 'grades').$OUTPUT->help_icon('multfactor', 'grades');
+
+        $name = $this->curve_to ? 'multfactor_alt' : 'multfactor';
+
+        $headercell->text = get_string($name, 'grades').$OUTPUT->help_icon($name, 'grades');
         return $headercell;
     }
 
@@ -1051,9 +1056,29 @@ class grade_edit_tree_column_multfactor extends grade_edit_tree_column {
             return $itemcell;
         }
 
-        $multfactor = '<input type="text" size="4" id="multfactor'.$item->id.'" name="multfactor_'.$item->id.'" value="'.grade_edit_tree::format_number($item->multfactor).'" />';
+        $size = 4;
+        $multfactor = $item->multfactor;
 
-        $itemcell->text = $multfactor;
+        $params = array(
+            'type' => 'text',
+            'id' => 'multfactor'.$item->id,
+            'name' => 'multfactor_'.$item->id
+        );
+
+        if ($this->curve_to) {
+            $decimals = $item->get_decimals();
+            $size += $decimals;
+            $multfactor = format_float(($multfactor * $item->grademax), $decimals);
+            $params['class'] = 'curving';
+        } else {
+            $multfactor = grade_edit_tree::format_number($multfactor);
+        }
+
+        $params += array('size' => $size, 'value' => $multfactor);
+
+        $multfactor = html_writer::empty_tag('input', $params);
+
+        $itemcell->text .= $multfactor;
         return $itemcell;
     }
 

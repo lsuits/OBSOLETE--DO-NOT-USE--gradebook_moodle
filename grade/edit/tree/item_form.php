@@ -95,8 +95,26 @@ class edit_item_form extends moodleform {
         $mform->disabledIf('gradepass', 'gradetype', 'eq', GRADE_TYPE_NONE);
         $mform->disabledIf('gradepass', 'gradetype', 'eq', GRADE_TYPE_TEXT);
 
-        $mform->addElement('text', 'multfactor', get_string('multfactor', 'grades'));
-        $mform->addHelpButton('multfactor', 'multfactor', 'grades');
+        if (get_config('moodle', 'grade_multfactor_alt')) {
+            $curve_to = get_string('multfactor_alt', 'grades');
+            $perform_curve = get_string('allow_multfactor_alt', 'grades');
+
+            $mform->addElement('checkbox', 'curve_to', $perform_curve,'');
+
+            $mform->setAdvanced('curve_to');
+
+            $mform->addElement('text', 'multfactor', $curve_to);
+
+            $mform->disabledIf('curve_to', 'gradetype', 'eq', GRADE_TYPE_NONE);
+            $mform->disabledIf('curve_to', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
+            $mform->disabledIf('multfactor', 'curve_to', 'notchecked');
+            $mform->addHelpButton('multfactor', 'multfactor_alt', 'grades', null);
+        } else {
+            $mform->addElement('text', 'multfactor', get_string('multfactor', 'grades'));
+            $mform->addHelpButton('multfactor', 'multfactor', 'grades');
+        }
+
         $mform->setAdvanced('multfactor');
         $mform->disabledIf('multfactor', 'gradetype', 'eq', GRADE_TYPE_NONE);
         $mform->disabledIf('multfactor', 'gradetype', 'eq', GRADE_TYPE_TEXT);
@@ -215,6 +233,10 @@ class edit_item_form extends moodleform {
             if (!$grade_item->is_raw_used()) {
                 $mform->removeElement('plusfactor');
                 $mform->removeElement('multfactor');
+
+                if ($mform->elementExists('curve_to')) {
+                    $mform->removeElement('curve_to');
+                }
             }
 
             if ($grade_item->is_outcome_item()) {
