@@ -970,7 +970,13 @@ class grade_edit_tree_column_droplow extends grade_edit_tree_column_category {
     }
 
     public function get_category_cell($category, $levelclass, $params) {
-        $droplow = '<input type="text" size="3" id="droplow_'.$category->id.'" name="droplow_'.$category->id.'" value="'.$category->droplow.'" />';
+
+        $disabled = '';
+        if (!empty($category->keephigh)) {
+            $disabled = 'DISABLED';
+        }
+
+        $droplow = '<input '.$disabled.' type="text" size="3" id="droplow_'.$category->id.'" name="droplow_'.$category->id.'" value="'.$category->droplow.'" />';
 
         if ($this->forced) {
             $droplow = $category->droplow;
@@ -1003,7 +1009,13 @@ class grade_edit_tree_column_keephigh extends grade_edit_tree_column_category {
     }
 
     public function get_category_cell($category, $levelclass, $params) {
-        $keephigh = '<input type="text" size="3" id="keephigh_'.$category->id.'" name="keephigh_'.$category->id.'" value="'.$category->keephigh.'" />';
+
+        $disabled = '';
+        if (!empty($category->droplow)) {
+            $disabled = 'DISABLED';
+        }
+
+        $keephigh = '<input '.$disabled.' type="text" size="3" id="keephigh_'.$category->id.'" name="keephigh_'.$category->id.'" value="'.$category->keephigh.'" />';
 
         if ($this->forced) {
             $keephigh = $category->keephigh;
