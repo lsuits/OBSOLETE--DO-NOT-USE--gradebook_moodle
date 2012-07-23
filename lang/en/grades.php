@@ -120,6 +120,8 @@ $string['compact'] = 'Compact';
 $string['contract'] = 'Contract category';
 $string['controls'] = 'Controls';
 $string['courseavg'] = 'Course average';
+$string['coursecateditable'] = 'Course category editable';
+$string['coursecateditable_help'] = 'Disabling will make the course category name an uneditable field.';
 $string['coursegradecategory'] = 'Course grade category';
 $string['coursegradedisplaytype'] = 'Course grade display type';
 $string['coursegradedisplayupdated'] = 'The course grade display type has been updated.';
@@ -476,6 +478,10 @@ $string['outcomesstandardavailable'] = 'Available standard outcomes';
 $string['outcomestandard'] = 'Standard outcome';
 $string['outcomestandard_help'] = 'A standard outcome is available site-wide, for all courses.';
 $string['overallaverage'] = 'Overall average';
+$string['overridecat'] = 'Allow Grade Override';
+$string['overridecat_help'] = 'This option allows users to override the final
+grade in for category totals. Unchecking this option will make category totals
+uneditable.';
 $string['overridden'] = 'Overridden';
 $string['overridden_help'] = 'If ticked, the grade can no longer be changed from within the related activity.
 

@@ -69,6 +69,8 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     /// Grade category settings
     $temp = new admin_settingpage('gradecategorysettings', new lang_string('gradecategorysettings', 'grades'), 'moodle/grade:manage');
     if ($ADMIN->fulltree) {
+        $temp->add(new admin_setting_configcheckbox('grade_coursecateditable', new lang_string('coursecateditable', 'grades'), new lang_string('coursecateditable_help', 'grades'), 1));
+
         $temp->add(new admin_setting_configcheckbox('grade_hideforcedsettings', new lang_string('hideforcedsettings', 'grades'), new lang_string('hideforcedsettings_help', 'grades'), '1'));
 
         $strnoforce = new lang_string('noforce', 'grades');
@@ -97,6 +99,9 @@ if (has_capability('moodle/grade:manage', $systemcontext)
         $temp->add(new admin_setting_configcheckbox('grade_swm_extra_credit', new lang_string('swm_ec', 'grades'), new lang_string('swm_ec_help', 'grades'), '1'));
 
         $options = array(0 => new lang_string('no'), 1 => new lang_string('yes'));
+
+        $temp->add(new admin_setting_configcheckbox('grade_overridecat', new lang_string('overridecat', 'grades'),
+            new lang_string('overridecat_help', 'grades'), 1));
 
         $defaults = array('value'=>1, 'forced'=>false, 'adv'=>true);
         $temp->add(new admin_setting_gradecat_combo('grade_aggregateonlygraded', new lang_string('aggregateonlygraded', 'grades'),

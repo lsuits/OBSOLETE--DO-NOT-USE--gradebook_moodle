@@ -347,12 +347,18 @@ class edit_category_form extends moodleform {
                 unset($mform->_rules['fullname']);
                 $key = array_search('fullname', $mform->_required);
                 unset($mform->_required[$key]);
+
+                $editable = (bool) get_config('moodle', 'grade_coursecateditable');
+
+                // If it is a course category and its fullname is ?, show an empty field
+                if ($editable && $mform->getElementValue('fullname') == '?') {
+                    $mform->setDefault('fullname', '');
+                } else if (!$editable) {
+                    $mform->setDefault('fullname', $COURSE->fullname);
+                    $mform->hardFreeze('fullname');
+                }
             }
 
-            // If it is a course category and its fullname is ?, show an empty field
-            if ($grade_category->is_course_category() && $mform->getElementValue('fullname') == '?') {
-                $mform->setDefault('fullname', '');
-            }
             // remove unwanted aggregation options
             if ($mform->elementExists('aggregation')) {
                 $allaggoptions = array_keys($this->aggregation_options);
