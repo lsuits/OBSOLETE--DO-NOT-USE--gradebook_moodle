@@ -130,6 +130,10 @@ if (has_capability('moodle/grade:manage', $systemcontext)
             new lang_string('multfactor_alt', 'grades'),
             new lang_string('multfactor_alt_desc', 'grades'), 0));
 
+        $temp->add(new admin_setting_configcheckbox('grade_item_manual_recompute',
+            new lang_string('gradeitemmanualrecompute', 'grades'),
+            new lang_string('gradeitemmanualrecompute_help', 'grades'), 0));
+
         $temp->add(new admin_setting_configselect('grade_displaytype', new lang_string('gradedisplaytype', 'grades'),
                                                   new lang_string('gradedisplaytype_help', 'grades'), GRADE_DISPLAY_TYPE_REAL, $display_types));
 
