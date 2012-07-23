@@ -165,6 +165,39 @@ class edit_category_form extends moodleform {
         $mform->disabledIf('grade_item_gradepass', 'grade_item_gradetype', 'eq', GRADE_TYPE_NONE);
         $mform->disabledIf('grade_item_gradepass', 'grade_item_gradetype', 'eq', GRADE_TYPE_TEXT);
 
+        if (get_config('moodle', 'grade_multfactor_alt')) {
+            $curve_to = get_string('multfactor_alt', 'grades');
+            $perform_curve = get_string('allow_multfactor_alt', 'grades');
+
+            $mform->addElement('checkbox', 'curve_to', $perform_curve,'');
+
+            $mform->setAdvanced('curve_to');
+
+            $mform->addElement('text', 'grade_item_multfactor', $curve_to);
+
+            $mform->disabledIf('curve_to', 'gradetype', 'eq', GRADE_TYPE_NONE);
+            $mform->disabledIf('curve_to', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
+            $mform->disabledIf('grade_item_multfactor', 'curve_to', 'notchecked');
+            $mform->addHelpButton(
+                'grade_item_multfactor', 'multfactor_alt',
+                'grades', null
+            );
+        } else {
+            $mform->addElement('text', 'grade_item_multfactor', get_string('multfactor', 'grades'));
+            $mform->addHelpButton('grade_item_multfactor', 'grade_item_multfactor', 'grades');
+        }
+
+        $mform->setAdvanced('grade_item_multfactor');
+        $mform->disabledIf('grade_item_multfactor', 'gradetype', 'eq', GRADE_TYPE_NONE);
+        $mform->disabledIf('grade_item_multfactor', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
+        $mform->addElement('text', 'grade_item_plusfactor', get_string('plusfactor', 'grades'));
+        $mform->addHelpButton('grade_item_plusfactor', 'plusfactor', 'grades');
+        $mform->setAdvanced('grade_item_plusfactor');
+        $mform->disabledIf('grade_item_plusfactor', 'gradetype', 'eq', GRADE_TYPE_NONE);
+        $mform->disabledIf('grade_item_plusfactor', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
         /// grade display prefs
         $default_gradedisplaytype = grade_get_setting($COURSE->id, 'displaytype', $CFG->grade_displaytype);
         $options = array(GRADE_DISPLAY_TYPE_DEFAULT            => get_string('default', 'grades'),

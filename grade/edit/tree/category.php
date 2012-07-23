@@ -49,8 +49,9 @@ require_capability('moodle/grade:manage', $context);
 $gpr = new grade_plugin_return();
 $returnurl = $gpr->get_return_url('index.php?id='.$course->id);
 
-
 $heading = get_string('categoryedit', 'grades');
+
+$curve_to = get_config('moodle', 'grade_multfactor_alt');
 
 if ($id) {
     if (!$grade_category = grade_category::fetch(array('id'=>$id, 'courseid'=>$course->id))) {
@@ -73,7 +74,6 @@ if ($id) {
     $category->grade_item_grademax   = format_float($category->grade_item_grademax, $decimalpoints);
     $category->grade_item_grademin   = format_float($category->grade_item_grademin, $decimalpoints);
     $category->grade_item_gradepass  = format_float($category->grade_item_gradepass, $decimalpoints);
-    $category->grade_item_multfactor = format_float($category->grade_item_multfactor, 4);
     $category->grade_item_plusfactor = format_float($category->grade_item_plusfactor, 4);
 
     if (!$parent_category) {
@@ -97,6 +97,16 @@ if ($id) {
         $category->{"grade_item_$key"} = $value;
     }
 }
+
+$multfactor = $grade_item->multfactor;
+$curve_decimals = 4;
+
+if ($curve_to) {
+    $curve_decimals = $decimalpoints;
+    $multfactor *= $category->grade_item_grademax;
+}
+
+$category->grade_item_multfactor = format_float($multfactor, $curve_decimals);
 
 $mform = new edit_category_form(null, array('current'=>$category, 'gpr'=>$gpr));
 
@@ -164,6 +174,17 @@ if ($mform->is_cancelled()) {
     foreach ($convert as $param) {
         if (property_exists($itemdata, $param)) {
             $itemdata->$param = unformat_float($itemdata->$param);
+        }
+    }
+
+    // Special handling of curve to
+    if ($curve_to) {
+        if (empty($itemdata->multfactor) || $itemdata->multfactor <= 0.0000) {
+            $itemdata->multfactor = 1.0000;
+        } else if (!isset($data->curve_to) and isset($grade_item->multfactor)) {
+            $itemdata->multfactor = $grade_item->multfactor;
+        } else {
+            $itemdata->multfactor = $itemdata->multfactor / $itemdata->grademax;
         }
     }
 
