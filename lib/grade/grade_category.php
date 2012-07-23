@@ -918,6 +918,12 @@ class grade_category extends grade_object {
     public function apply_limit_rules(&$grade_values, $items) {
 
         if (!empty($this->droplow)) {
+            $limit = (bool)get_config('moodle', 'grade_droplow_limit');
+
+            if ($limit and count($grade_values) <= $this->droplow) {
+                return;
+            }
+
             asort($grade_values, SORT_NUMERIC);
             $dropped = 0;
 
