@@ -269,7 +269,8 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
             $insert_value = $bulk->get_insert_value($data);
 
             // Appropriately massage data that may not exist
-            if ($this->supports_paging() and isset($this->all_items)) {
+            if ($this->supports_paging()) {
+                // TODO: this only works with the grade screen...
                 $grade_item = grade_item::fetch(array(
                     'courseid' => $this->courseid,
                     'id' => $this->item->id

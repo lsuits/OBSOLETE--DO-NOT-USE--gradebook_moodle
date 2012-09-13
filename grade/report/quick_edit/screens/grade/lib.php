@@ -5,6 +5,8 @@ class quick_edit_grade extends quick_edit_tablelike
 
     private $requires_extra = false;
 
+    private $requires_paging = false;
+
     var $structure;
 
     private static $allow_categories;
@@ -61,13 +63,18 @@ class quick_edit_grade extends quick_edit_tablelike
             return;
         }
 
-        $this->all_items = $this->items;
+        // Only page when necessary
+        if (count($this->items) > $this->perpage) {
+            $this->requires_paging = true;
 
-        $this->items = get_role_users(
-            $roleids, $this->context, false, '',
-            'u.lastname, u.firstname', null, $this->groupid,
-            $this->perpage * $this->page, $this->perpage
-        );
+            $this->all_items = $this->items;
+
+            $this->items = get_role_users(
+                $roleids, $this->context, false, '',
+                'u.lastname, u.firstname', null, $this->groupid,
+                $this->perpage * $this->page, $this->perpage
+            );
+        }
 
         global $DB;
 
@@ -143,7 +150,7 @@ class quick_edit_grade extends quick_edit_tablelike
     }
 
     public function supports_paging() {
-        return true;
+        return $this->requires_paging;
     }
 
     public function pager() {
