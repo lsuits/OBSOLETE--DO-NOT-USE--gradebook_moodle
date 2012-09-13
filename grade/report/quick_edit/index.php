@@ -31,11 +31,11 @@ $courseid = required_param('id', PARAM_INT);
 $groupid  = optional_param('group', null, PARAM_INT);
 
 // Making this work with profile reports
-$userid = optional_param('userid', null, PARAM_INT);
+$userid   = optional_param('userid', null, PARAM_INT);
 
 $default_type = $userid ? 'user' : 'select';
 
-$itemid = optional_param('itemid', $userid, PARAM_INT);
+$itemid   = optional_param('itemid', $userid, PARAM_INT);
 $itemtype = optional_param('item', $default_type, PARAM_TEXT);
 
 $course_params = array('id' => $courseid);
@@ -61,7 +61,9 @@ require_capability('moodle/grade:edit', $context);
 // End permission
 
 $gpr = new grade_plugin_return(array(
-    'type' => 'report', 'plugin' => 'quick_edit', 'courseid' => $courseid
+    'type' => 'report',
+    'plugin' => 'quick_edit',
+    'courseid' => $courseid
 ));
 
 /// last selected report session tracking
@@ -73,7 +75,8 @@ $USER->grade_last_report[$course->id] = 'quick_edit';
 grade_regrade_final_grades($courseid);
 
 $report = new grade_report_quick_edit(
-    $courseid, $gpr, $context, $itemtype, $itemid, $groupid
+    $courseid, $gpr, $context,
+    $itemtype, $itemid, $groupid
 );
 
 $reportname = $report->screen->heading();
@@ -107,6 +110,10 @@ if ($data = data_submitted()) {
 }
 
 print_grade_page_head($course->id, 'report', 'quick_edit', $reportname);
+
+if ($report->screen->supports_paging()) {
+    echo $report->screen->pager();
+}
 
 if ($report->screen->display_group_selector()) {
     echo $report->group_selector;

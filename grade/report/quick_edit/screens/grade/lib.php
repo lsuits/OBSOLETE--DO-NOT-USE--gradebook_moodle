@@ -52,12 +52,22 @@ class quick_edit_grade extends quick_edit_tablelike
     public function init($self_item_is_empty = false) {
         $roleids = explode(',', get_config('moodle', 'gradebookroles'));
 
-        $this->items = get_role_users($roleids, $this->context, false, '',
-                'u.lastname, u.firstname', null, $this->groupid);
+        $this->items = get_role_users(
+            $roleids, $this->context, false, '',
+            'u.lastname, u.firstname', null, $this->groupid
+        );
 
         if ($self_item_is_empty) {
             return;
         }
+
+        $this->all_items = $this->items;
+
+        $this->items = get_role_users(
+            $roleids, $this->context, false, '',
+            'u.lastname, u.firstname', null, $this->groupid,
+            $this->perpage * $this->page, $this->perpage
+        );
 
         global $DB;
 
@@ -130,6 +140,25 @@ class quick_edit_grade extends quick_edit_tablelike
         }
 
         return $this->range;
+    }
+
+    public function supports_paging() {
+        return true;
+    }
+
+    public function pager() {
+        global $OUTPUT;
+
+        return $OUTPUT->paging_bar(
+            count($this->all_items), $this->page, $this->perpage,
+            new moodle_url('/grade/report/quick_edit/index.php', array(
+                'perpage' => $this->perpage,
+                'id' => $this->courseid,
+                'groupid' => $this->groupid,
+                'itemid' => $this->itemid,
+                'item' => 'grade'
+            ))
+        );
     }
 
     public function heading() {
