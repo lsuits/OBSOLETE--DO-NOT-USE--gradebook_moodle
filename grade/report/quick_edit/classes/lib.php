@@ -23,6 +23,10 @@ abstract class quick_edit_screen {
 
     var $context;
 
+    var $page;
+
+    var $perpage;
+
     function __construct($courseid, $itemid, $groupid = null) {
         global $DB;
 
@@ -32,6 +36,9 @@ abstract class quick_edit_screen {
 
         $this->context = get_context_instance(CONTEXT_COURSE, $this->courseid);
         $this->course = $DB->get_record('course', array('id' => $courseid));
+
+        $this->page = optional_param('page', 0, PARAM_INT);
+        $this->perpage = optional_param('perpage', 300, PARAM_INT);
 
         $this->init(empty($itemid));
     }
@@ -104,6 +111,31 @@ abstract class quick_edit_screen {
     public abstract function init($self_item_is_empty = false);
 
     public abstract function html();
+
+    public function supports_paging() {
+        return false;
+    }
+
+    public function pager() {
+        if (!$this->supports_paging()) {
+            return '';
+        }
+
+        global $OUTPUT;
+
+        list($___, $item) = explode('quick_edit_', get_class($this));
+
+        return $OUTPUT->paging_bar(
+            count($this->items), $this->page, $this->perpage,
+            new moodle_url('/grade/report/quick_edit/index.php', array(
+                'perpage' => $this->perpage,
+                'id' => $this->courseid,
+                'groupid' => $this->groupid,
+                'itemid' => $this->itemid,
+                'item' => $item
+            ))
+        );
+    }
 
     public function js() {
         global $PAGE;
@@ -235,6 +267,32 @@ abstract class quick_edit_tablelike extends quick_edit_screen implements tabbabl
         if ($bulk->is_applied($data)) {
             $filter = $bulk->get_type($data);
             $insert_value = $bulk->get_insert_value($data);
+
+            // Appropriately massage data that may not exist
+            if ($this->supports_paging()) {
+                // TODO: this only works with the grade screen...
+                $grade_item = grade_item::fetch(array(
+                    'courseid' => $this->courseid,
+                    'id' => $this->item->id
+                ));
+
+                $null = $grade_item->gradetype == GRADE_TYPE_SCALE ? -1 : '';
+
+                foreach ($this->all_items as $itemid => $item) {
+                    $field = "finalgrade_{$grade_item->id}_{$itemid}";
+                    if (isset($data->$field)) {
+                        continue;
+                    }
+
+                    $grade = grade_grade::fetch(array(
+                        'itemid' => $grade_item->id,
+                        'userid' => $itemid
+                    ));
+
+                    $data->$field = empty($grade) ? $null : $grade->finalgrade;
+                    $data->{"old$field"} = $data->$field;
+                }
+            }
 
             foreach ($data as $varname => $value) {
                 if (!preg_match('/^finalgrade_(\d+)_/', $varname, $matches)) {
