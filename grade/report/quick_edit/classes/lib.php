@@ -11,7 +11,7 @@ interface selectable_items {
 }
 
 interface item_filtering {
-    public function filter($item);
+    public static function filter($item);
 }
 
 abstract class quick_edit_screen {
